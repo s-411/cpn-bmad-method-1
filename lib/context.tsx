@@ -3,6 +3,11 @@
 import { createContext, useContext, useState, ReactNode } from 'react'
 import { AuthProvider } from './auth/AuthProvider'
 
+// Re-export Supabase hooks with expected names
+export { useSupabaseGirls as useGirls } from './hooks/useSupabaseGirls'
+export { useSupabaseDataEntries as useDataEntries } from './hooks/useSupabaseDataEntries'
+export { useSupabaseGlobalStats as useGlobalStats } from './hooks/useSupabaseGlobalStats'
+
 interface AppContextType {
   // Add global app state here as needed
   theme: 'dark' | 'light'
