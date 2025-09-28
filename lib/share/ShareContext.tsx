@@ -7,7 +7,14 @@ interface ShareContextType {
     isShareModalOpen: boolean
     shareData: any
     preferences: {
-      defaultPrivacy: string
+      defaultFormat: 'image' | 'text' | 'url'
+      defaultPrivacy: {
+        level: 'public' | 'private' | 'unlisted'
+        allowStatistics: boolean
+        allowComparisons: boolean
+        allowAchievements: boolean
+      }
+      autoWatermark: boolean
     }
     history: any[]
   }
@@ -25,7 +32,16 @@ const ShareContext = createContext<ShareContextType | undefined>(undefined)
 export function ShareProvider({ children }: { children: ReactNode }) {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [shareData, setShareData] = useState(null)
-  const [preferences] = useState({ defaultPrivacy: 'public' })
+  const [preferences] = useState({
+    defaultFormat: 'image' as const,
+    defaultPrivacy: {
+      level: 'public' as const,
+      allowStatistics: true,
+      allowComparisons: true,
+      allowAchievements: true,
+    },
+    autoWatermark: true,
+  })
   const [history] = useState<any[]>([])
 
   const openShareModal = (data: any) => {
