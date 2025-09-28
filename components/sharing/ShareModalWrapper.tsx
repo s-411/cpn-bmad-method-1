@@ -8,8 +8,8 @@ export default function ShareModalWrapper() {
   
   return (
     <SharePreviewModal
-      isOpen={state.showPreviewModal}
-      onClose={() => actions.togglePreviewModal(false)}
+      isOpen={state.isShareModalOpen}
+      onClose={() => actions.closeShareModal()}
     />
   );
 }

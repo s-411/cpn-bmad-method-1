@@ -28,7 +28,7 @@ import {
   getROIRanking,
   getEnhancedGlobalStats
 } from '@/lib/calculations';
-import { AnalyticsShareButton } from '@/components/sharing/ShareButton';
+// import { AnalyticsShareButton } from '@/components/sharing/ShareButton';
 import { getGirlColors, getColorByGirlName } from '@/lib/colors';
 
 type TimeRange = '7' | '30' | '90' | 'all';
@@ -188,10 +188,10 @@ export default function AnalyticsPage() {
               </p>
             </div>
             <div className="flex items-center gap-4">
-              <AnalyticsShareButton 
-                data={{ globalStats, timeRange, filteredEntries }} 
+              {/* <AnalyticsShareButton
+                data={{ globalStats, timeRange, filteredEntries }}
                 className="mr-2"
-              />
+              /> */}
               <div className="flex items-center gap-2">
                 <span className="text-sm text-cpn-gray">Time Range:</span>
                 <select

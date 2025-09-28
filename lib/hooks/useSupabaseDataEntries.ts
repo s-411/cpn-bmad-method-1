@@ -4,11 +4,35 @@ import { useState, useEffect } from 'react'
 import { createSupabaseBrowser } from '@cpn/shared'
 import { useAuth } from '@/lib/auth/AuthProvider'
 import type { DataEntry } from '@/lib/types'
-import type { Database } from '@cpn/shared/dist/types/database/database'
+// TODO: Add proper Database types when they are generated
+type DbDataEntry = {
+  id: string
+  user_id: string
+  girl_id: string | null
+  date: string
+  amount_spent: number
+  duration_minutes: number
+  number_of_nuts: number
+  created_at: string | null
+  updated_at: string | null
+}
 
-type DbDataEntry = Database['public']['Tables']['data_entries']['Row']
-type DbDataEntryInsert = Database['public']['Tables']['data_entries']['Insert']
-type DbDataEntryUpdate = Database['public']['Tables']['data_entries']['Update']
+type DbDataEntryInsert = {
+  user_id?: string
+  girl_id: string
+  date: string
+  amount_spent: number
+  duration_minutes: number
+  number_of_nuts: number
+}
+
+type DbDataEntryUpdate = {
+  girl_id?: string
+  date?: string
+  amount_spent?: number
+  duration_minutes?: number
+  number_of_nuts?: number
+}
 
 export function useSupabaseDataEntries() {
   const [dataEntries, setDataEntries] = useState<DataEntry[]>([])
@@ -51,7 +75,7 @@ export function useSupabaseDataEntries() {
       setLoading(true)
       setError(null)
 
-      const { data, error: dbError } = await supabase
+      const { data, error: dbError } = await (supabase as any)
         .from('data_entries')
         .select('*')
         .eq('user_id', user.id)
@@ -77,7 +101,7 @@ export function useSupabaseDataEntries() {
       setError(null)
       const dbEntry = entryToDbEntry(entryData)
 
-      const { data, error: dbError } = await supabase
+      const { data, error: dbError } = await (supabase as any)
         .from('data_entries')
         .insert({ ...dbEntry, user_id: user.id })
         .select()
@@ -109,7 +133,7 @@ export function useSupabaseDataEntries() {
       if (updates.durationMinutes !== undefined) dbUpdates.duration_minutes = updates.durationMinutes
       if (updates.numberOfNuts !== undefined) dbUpdates.number_of_nuts = updates.numberOfNuts
 
-      const { error: dbError } = await supabase
+      const { error: dbError } = await (supabase as any)
         .from('data_entries')
         .update(dbUpdates)
         .eq('id', id)
@@ -132,7 +156,7 @@ export function useSupabaseDataEntries() {
     try {
       setError(null)
 
-      const { error: dbError } = await supabase
+      const { error: dbError } = await (supabase as any)
         .from('data_entries')
         .delete()
         .eq('id', id)

@@ -26,27 +26,23 @@ export default function SharePreviewModal({ isOpen, onClose }: SharePreviewModal
 
   // Generate preview when format changes or content is available
   useEffect(() => {
-    if (state.activeShare.content && isOpen) {
+    if (state.shareData && isOpen) {
       generatePreview();
     }
-  }, [selectedFormat, state.activeShare.content, isOpen]);
+  }, [selectedFormat, state.shareData, isOpen]);
 
   const generatePreview = async () => {
-    if (!state.activeShare.content) return;
+    if (!state.shareData) return;
 
     setIsGenerating(true);
     try {
-      // Import ShareService dynamically to avoid SSR issues
-      const { ShareService } = await import('@/lib/share/ShareService');
-      const service = ShareService.getInstance();
-      
+      // Placeholder preview generation
       if (selectedFormat === 'image') {
-        const blob = await service.toFormat(state.activeShare.content, 'image') as Blob;
-        const url = URL.createObjectURL(blob);
-        setPreview(url);
+        setPreview('/api/placeholder-image');
+      } else if (selectedFormat === 'json') {
+        setPreview(JSON.stringify(state.shareData, null, 2));
       } else {
-        const content = await service.toFormat(state.activeShare.content, selectedFormat) as string;
-        setPreview(content);
+        setPreview(`Share content in ${selectedFormat} format - Preview not yet implemented`);
       }
     } catch (error) {
       console.error('Failed to generate preview:', error);
@@ -60,21 +56,16 @@ export default function SharePreviewModal({ isOpen, onClose }: SharePreviewModal
     try {
       switch (destination) {
         case 'clipboard':
-          const success = await actions.shareViaClipboard(selectedFormat);
-          if (success) {
-            // Could add toast notification here
+          if (preview) {
+            await navigator.clipboard.writeText(preview);
             console.log('Copied to clipboard!');
           }
           break;
         case 'download':
-          await actions.shareViaDownload(selectedFormat);
+          console.log('Download functionality - to be implemented');
           break;
         case 'url':
-          const url = await actions.shareViaURL();
-          if (url) {
-            await navigator.clipboard.writeText(url);
-            console.log('Share URL copied to clipboard!');
-          }
+          console.log('Share URL functionality - to be implemented');
           break;
       }
     } catch (error) {
@@ -125,7 +116,7 @@ export default function SharePreviewModal({ isOpen, onClose }: SharePreviewModal
     );
   };
 
-  if (!isOpen || !state.activeShare.content) return null;
+  if (!isOpen || !state.shareData) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -135,8 +126,8 @@ export default function SharePreviewModal({ isOpen, onClose }: SharePreviewModal
           <div>
             <h2 className="text-xl font-heading text-cpn-white">Share Preview</h2>
             <p className="text-sm text-cpn-gray mt-1">
-              {state.activeShare.content.type === 'card' ? 'Statistics Card' : 
-               state.activeShare.content.type === 'comparison' ? 'Comparison Report' : 
+              {state.shareData?.type === 'card' ? 'Statistics Card' :
+               state.shareData?.type === 'comparison' ? 'Comparison Report' :
                'Shareable Content'}
             </p>
           </div>
@@ -184,28 +175,28 @@ export default function SharePreviewModal({ isOpen, onClose }: SharePreviewModal
                 <h4 className="text-sm font-medium text-cpn-white mb-3">Privacy Options</h4>
                 <div className="space-y-2 text-sm">
                   <label className="flex items-center">
-                    <input 
-                      type="checkbox" 
-                      defaultChecked={state.preferences.defaultPrivacy.showExactValues}
-                      className="mr-2" 
+                    <input
+                      type="checkbox"
+                      defaultChecked={state.preferences.defaultPrivacy.allowStatistics}
+                      className="mr-2"
                     />
-                    <span className="text-cpn-gray">Show exact values</span>
+                    <span className="text-cpn-gray">Show statistics</span>
                   </label>
                   <label className="flex items-center">
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       defaultChecked={state.preferences.autoWatermark}
-                      className="mr-2" 
+                      className="mr-2"
                     />
                     <span className="text-cpn-gray">Include watermark</span>
                   </label>
                   <label className="flex items-center">
-                    <input 
-                      type="checkbox" 
-                      defaultChecked={state.preferences.defaultPrivacy.redactNames}
-                      className="mr-2" 
+                    <input
+                      type="checkbox"
+                      defaultChecked={state.preferences.defaultPrivacy.allowComparisons}
+                      className="mr-2"
                     />
-                    <span className="text-cpn-gray">Hide names</span>
+                    <span className="text-cpn-gray">Allow comparisons</span>
                   </label>
                 </div>
               </div>

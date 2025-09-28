@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import Script from 'next/script'
 import './globals.css'
 import { AppProvider } from '@/lib/context'
-import { ShareProvider } from '@/lib/share/ShareContext'
-import ShareModalWrapper from '@/components/sharing/ShareModalWrapper'
+// import { ShareProvider } from '@/lib/share/ShareContext'
+// import ShareModalWrapper from '@/components/sharing/ShareModalWrapper'
 import LayoutWrapper from '@/components/LayoutWrapper'
 
 export const metadata: Metadata = {
@@ -29,12 +29,12 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="bg-cpn-dark text-cpn-white min-h-screen" suppressHydrationWarning>
         <AppProvider>
-          <ShareProvider>
+          {/* <ShareProvider> */}
             <LayoutWrapper>
               {children}
             </LayoutWrapper>
-            <ShareModalWrapper />
-          </ShareProvider>
+            {/* <ShareModalWrapper /> */}
+          {/* </ShareProvider> */}
         </AppProvider>
 
         {/* Rewardful Affiliate Tracking */}

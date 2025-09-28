@@ -47,11 +47,8 @@ export default function ShareButton({
         },
         watermark: state.preferences.autoWatermark ? {
           enabled: true,
-          type: 'text',
-          position: 'corner',
-          opacity: 0.7,
-          includeDomain: true,
-          includeTimestamp: true
+          text: 'CPN',
+          position: 'bottom-right'
         } : undefined
       };
 
@@ -69,16 +66,12 @@ export default function ShareButton({
         return;
       }
 
-      if (quickShare && state.preferences.quickShareEnabled) {
-        // Quick share via clipboard
-        const success = await actions.shareViaClipboard();
-        if (success) {
-          // Show success feedback (could add toast here)
-          console.log('Shared to clipboard successfully');
-        }
+      if (quickShare) {
+        // Quick share via clipboard - placeholder functionality
+        console.log('Quick share to clipboard - feature to be implemented');
       } else {
-        // Open preview modal
-        actions.togglePreviewModal(true);
+        // Open share modal instead of preview modal
+        actions.openShareModal(data);
       }
     } catch (error) {
       console.error('Failed to generate share content:', error);

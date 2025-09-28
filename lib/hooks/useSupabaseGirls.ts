@@ -4,11 +4,47 @@ import { useState, useEffect } from 'react'
 import { createSupabaseBrowser } from '@cpn/shared'
 import { useAuth } from '@/lib/auth/AuthProvider'
 import type { Girl, GirlWithMetrics, CalculatedMetrics } from '@/lib/types'
-import type { Database } from '@cpn/shared/dist/types/database/database'
+// TODO: Add proper Database types when they are generated
+type DbGirl = {
+  id: string
+  user_id: string
+  name: string
+  age: number
+  nationality: string | null
+  rating: number
+  is_active: boolean | null
+  ethnicity: string | null
+  hair_color: string | null
+  location_city: string | null
+  location_country: string | null
+  created_at: string | null
+  updated_at: string | null
+}
 
-type DbGirl = Database['public']['Tables']['girls']['Row']
-type DbGirlInsert = Database['public']['Tables']['girls']['Insert']
-type DbGirlUpdate = Database['public']['Tables']['girls']['Update']
+type DbGirlInsert = {
+  user_id?: string
+  name: string
+  age: number
+  nationality: string | null
+  rating: number
+  is_active?: boolean | null
+  ethnicity: string | null
+  hair_color: string | null
+  location_city: string | null
+  location_country: string | null
+}
+
+type DbGirlUpdate = {
+  name?: string
+  age?: number
+  nationality?: string | null
+  rating?: number
+  is_active?: boolean | null
+  ethnicity?: string | null
+  hair_color?: string | null
+  location_city?: string | null
+  location_country?: string | null
+}
 
 export function useSupabaseGirls() {
   const [girls, setGirls] = useState<Girl[]>([])
@@ -52,7 +88,7 @@ export function useSupabaseGirls() {
 
   // Calculate metrics for a girl
   const calculateMetrics = async (girl: Girl): Promise<GirlWithMetrics> => {
-    const { data: entries } = await supabase
+    const { data: entries } = await (supabase as any)
       .from('data_entries')
       .select('*')
       .eq('girl_id', girl.id)
@@ -73,9 +109,9 @@ export function useSupabaseGirls() {
       }
     }
 
-    const totalSpent = entries.reduce((sum, entry) => sum + Number(entry.amount_spent), 0)
-    const totalNuts = entries.reduce((sum, entry) => sum + Number(entry.number_of_nuts), 0)
-    const totalTime = entries.reduce((sum, entry) => sum + Number(entry.duration_minutes), 0)
+    const totalSpent = entries.reduce((sum: number, entry: any) => sum + Number(entry.amount_spent), 0)
+    const totalNuts = entries.reduce((sum: number, entry: any) => sum + Number(entry.number_of_nuts), 0)
+    const totalTime = entries.reduce((sum: number, entry: any) => sum + Number(entry.duration_minutes), 0)
 
     const metrics: CalculatedMetrics = {
       totalSpent,
@@ -106,7 +142,7 @@ export function useSupabaseGirls() {
       setLoading(true)
       setError(null)
 
-      const { data, error: dbError } = await supabase
+      const { data, error: dbError } = await (supabase as any)
         .from('girls')
         .select('*')
         .eq('user_id', user.id)
@@ -119,7 +155,7 @@ export function useSupabaseGirls() {
 
       // Calculate metrics for all girls
       const girlsWithMetricsData = await Promise.all(
-        girlsData.map(girl => calculateMetrics(girl))
+        girlsData.map((girl: Girl) => calculateMetrics(girl))
       )
       setGirlsWithMetrics(girlsWithMetricsData)
 
@@ -138,7 +174,7 @@ export function useSupabaseGirls() {
       setError(null)
       const dbGirl = girlToDbGirl(girlData)
 
-      const { data, error: dbError } = await supabase
+      const { data, error: dbError } = await (supabase as any)
         .from('girls')
         .insert({ ...dbGirl, user_id: user.id })
         .select()
@@ -177,7 +213,7 @@ export function useSupabaseGirls() {
       if (updates.nationality) dbUpdates.nationality = updates.nationality
       if (typeof updates.isActive !== 'undefined') dbUpdates.is_active = updates.isActive
 
-      const { error: dbError } = await supabase
+      const { error: dbError } = await (supabase as any)
         .from('girls')
         .update(dbUpdates)
         .eq('id', id)
@@ -200,7 +236,7 @@ export function useSupabaseGirls() {
     try {
       setError(null)
 
-      const { error: dbError } = await supabase
+      const { error: dbError } = await (supabase as any)
         .from('girls')
         .delete()
         .eq('id', id)

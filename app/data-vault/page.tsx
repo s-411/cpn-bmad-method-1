@@ -11,7 +11,7 @@ import {
 import { useGirls } from '@/lib/context';
 import { formatCurrency } from '@/lib/calculations';
 import { EthnicityOption, HairColorOption, DemographicStats } from '@/lib/types';
-import { ComparisonShareButton } from '@/components/sharing/ShareButton';
+// import { ComparisonShareButton } from '@/components/sharing/ShareButton';
 
 type FilterState = {
   ethnicity: EthnicityOption | 'All';

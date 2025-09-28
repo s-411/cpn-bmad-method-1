@@ -42,3 +42,5 @@ export interface ShareHistory {
   options: ShareOptions
   result: ShareResult
 }
+
+export type ShareFormat = 'image' | 'html' | 'markdown' | 'json' | 'text' | 'url'
