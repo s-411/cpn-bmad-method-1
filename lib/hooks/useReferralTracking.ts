@@ -10,8 +10,8 @@ export function useReferralTracking() {
     error: null,
     generateReferralCode: async () => null,
     trackReferral: async () => null,
-    trackConversion: async () => null,
-    trackEvent: async () => null,
+    trackConversion: async (email: string, amount: number, plan: string) => null,
+    trackEvent: async (eventName: string, data?: any) => null,
     getReferralStats: async () => null,
   }
 }
