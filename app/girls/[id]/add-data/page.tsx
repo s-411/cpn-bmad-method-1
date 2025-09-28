@@ -290,7 +290,7 @@ export default function AddDataPage({ params }: AddDataPageProps) {
                 <div className="flex justify-between">
                   <span className="text-cpn-gray">Active Girls:</span>
                   <span className="text-cpn-white font-medium">
-                    {girls.filter(g => getEntriesByGirlId(g.id).length > 0).length}
+                    {girls.filter(g => getEntriesForGirl(g.id).length > 0).length}
                   </span>
                 </div>
                 <div className="pt-3 border-t border-cpn-gray/10">

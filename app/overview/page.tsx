@@ -19,7 +19,7 @@ import DeleteWarningModal from '@/components/modals/DeleteWarningModal';
 
 export default function OverviewPage() {
   const { girlsWithMetrics, updateGirl, deleteGirl } = useGirls();
-  const { getEntriesByGirlId } = useDataEntries();
+  const { getEntriesForGirl } = useDataEntries();
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     field: 'createdAt',
     direction: 'asc'
