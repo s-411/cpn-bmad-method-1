@@ -114,3 +114,25 @@ export function calculateRankings(members: LeaderboardMember[]) {
       rank: index + 1
     }))
 }
+
+export function initializeSampleGroups() {
+  // Initialize with sample data if no groups exist
+  const existingGroups = leaderboardGroupsStorage.getAll()
+
+  if (existingGroups.length === 0) {
+    const sampleGroup: LeaderboardGroup = {
+      id: 'sample-group-1',
+      name: 'Sample Leaderboard',
+      createdBy: 'system',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      inviteToken: 'sample-token-123',
+      isPrivate: false,
+      memberCount: 0
+    }
+
+    leaderboardGroupsStorage.add(sampleGroup)
+  }
+
+  return leaderboardGroupsStorage.getAll()
+}
