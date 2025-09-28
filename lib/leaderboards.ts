@@ -101,6 +101,22 @@ export const leaderboardMembersStorage = {
   remove: (groupId: string, memberId: string) => {
     const members = leaderboardMembersStorage.getByGroup(groupId).filter(m => m.id !== memberId)
     leaderboardMembersStorage.save(groupId, members)
+  },
+
+  addMember: (groupId: string, userId: string, username: string) => {
+    const member: LeaderboardMember = {
+      id: `member-${Date.now()}`,
+      groupId,
+      userId,
+      username,
+      joinedAt: new Date(),
+      stats: {
+        totalSpent: 0,
+        totalNuts: 0,
+        efficiency: 0
+      }
+    }
+    leaderboardMembersStorage.add(member)
   }
 }
 
