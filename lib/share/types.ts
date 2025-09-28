@@ -4,11 +4,21 @@
 export interface ShareOptions {
   format: 'image' | 'text' | 'url'
   destination: 'clipboard' | 'download' | 'social'
-  privacy: 'public' | 'private' | 'unlisted'
+  privacy: {
+    level: 'public' | 'private' | 'unlisted'
+    allowStatistics: boolean
+    allowComparisons: boolean
+    allowAchievements: boolean
+  }
   platform?: 'instagram' | 'twitter' | 'facebook' | 'snapchat'
   dimensions?: {
     width: number
     height: number
+  }
+  watermark?: {
+    enabled: boolean
+    text?: string
+    position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
   }
 }
 
