@@ -35,8 +35,8 @@ export default function LeaderboardsPage() {
 
     try {
       const newGroup = leaderboardGroupsStorage.create(
-        { name: groupName.trim() },
-        'current-user'
+        groupName.trim(),
+        false // isPrivate = false for now
       );
       
       setGroupName('');
