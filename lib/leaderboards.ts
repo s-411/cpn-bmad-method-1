@@ -1,6 +1,8 @@
 // Placeholder leaderboards functionality for build compatibility
 // This will be implemented when leaderboards feature is developed
 
+import { LeaderboardRanking } from './types'
+
 export interface LeaderboardGroup {
   id: string
   name: string
@@ -164,19 +166,18 @@ export const leaderboardMembersStorage = {
   }
 }
 
-export function calculateRankings(members: LeaderboardMember[]) {
+export function calculateRankings(members: LeaderboardMember[]): LeaderboardRanking[] {
   return members
     .map(member => ({
-      ...member,
+      member,
       rank: 1,
-      totalSpent: member.stats?.totalSpent || 0,
-      totalNuts: member.stats?.totalNuts || 0,
       efficiency: member.stats?.totalNuts > 0 ? (member.stats.totalSpent / member.stats.totalNuts) : 0
     }))
     .sort((a, b) => a.efficiency - b.efficiency) // Lower cost per nut is better
-    .map((member, index) => ({
-      ...member,
-      rank: index + 1
+    .map((item, index) => ({
+      rank: index + 1,
+      member: item.member,
+      change: 0 // Default change value
     }))
 }
 
