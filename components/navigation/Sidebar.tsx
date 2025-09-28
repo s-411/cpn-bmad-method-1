@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/lib/auth/AuthProvider';
 import {
   HomeIcon,
   UsersIcon,
@@ -14,7 +15,8 @@ import {
   GlobeAltIcon,
   Cog6ToothIcon,
   TableCellsIcon,
-  UserGroupIcon
+  UserGroupIcon,
+  ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline';
 
 const navigationItems = [
@@ -33,6 +35,7 @@ const navigationItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { user, signOut } = useAuth();
 
   const isActive = (href: string) => {
     if (href === '/dashboard' && (pathname === '/' || pathname === '/dashboard')) {
@@ -84,9 +87,23 @@ export default function Sidebar() {
         </nav>
 
         <div className="mt-auto pt-6 border-t border-cpn-gray/20">
+          {user && (
+            <div className="mb-4">
+              <div className="text-xs text-cpn-gray mb-3">
+                <p>Logged in as:</p>
+                <p className="mt-1 text-cpn-white truncate">{user.email}</p>
+              </div>
+              <button
+                onClick={() => signOut()}
+                className="flex items-center gap-2 w-full text-left px-3 py-2 text-sm text-cpn-gray hover:text-cpn-white transition-colors"
+              >
+                <ArrowRightOnRectangleIcon className="w-4 h-4" />
+                Sign Out
+              </button>
+            </div>
+          )}
           <div className="text-xs text-cpn-gray">
-            <p>MVP Version</p>
-            <p className="mt-1">Data stored locally</p>
+            <p>v2.0 - Database Connected</p>
           </div>
         </div>
       </div>
