@@ -1,11 +1,5 @@
 {
-  "buildCommand": "npm run build",
-  "installCommand": "npm ci",
-  "framework": "nextjs",
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- packages/ supabase/ && echo 'No changes to relevant directories'",
-  "functions": {
-    "app/**": {
-      "runtime": "nodejs18.x"
-    }
-  }
+  "buildCommand": "npm install --workspaces && npm run build",
+  "installCommand": "npm install --include=dev",
+  "framework": "nextjs"
 }
