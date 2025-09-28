@@ -69,6 +69,11 @@ export const leaderboardGroupsStorage = {
   getByInviteToken: (token: string): LeaderboardGroup | null => {
     const groups = leaderboardGroupsStorage.getAll()
     return groups.find(g => g.inviteToken === token) || null
+  },
+
+  getById: (id: string): LeaderboardGroup | null => {
+    const groups = leaderboardGroupsStorage.getAll()
+    return groups.find(g => g.id === id) || null
   }
 }
 
