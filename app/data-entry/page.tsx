@@ -60,8 +60,8 @@ export default function DataEntryPage() {
 
     try {
       const durationMinutes = (parseInt(formData.hours) || 0) * 60 + (parseInt(formData.minutes) || 0);
-      
-      addDataEntry({
+
+      const result = await addDataEntry({
         girlId: selectedGirlId,
         date: new Date(formData.date),
         amountSpent: parseFloat(formData.amountSpent),
@@ -69,19 +69,23 @@ export default function DataEntryPage() {
         numberOfNuts: parseInt(formData.numberOfNuts)
       });
 
-      // Reset form
-      setFormData({
-        date: new Date().toISOString().split('T')[0],
-        amountSpent: '',
-        hours: '',
-        minutes: '',
-        numberOfNuts: ''
-      });
-      setSelectedGirlId('');
+      if (result) {
+        // Reset form
+        setFormData({
+          date: new Date().toISOString().split('T')[0],
+          amountSpent: '',
+          hours: '',
+          minutes: '',
+          numberOfNuts: ''
+        });
+        setSelectedGirlId('');
 
-      // Show success message
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 3000);
+        // Show success message
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 3000);
+      } else {
+        throw new Error('Failed to save entry');
+      }
 
     } catch (error) {
       console.error('Error saving entry:', error);

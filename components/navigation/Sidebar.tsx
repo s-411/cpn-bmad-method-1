@@ -27,7 +27,7 @@ const navigationItems = [
   { name: 'Data Entry', href: '/data-entry', icon: PlusIcon, active: true },
   { name: 'Data Vault', href: '/data-vault', icon: GlobeAltIcon, active: true },
   { name: 'Leaderboards', href: '/leaderboards', icon: TrophyIcon, active: true },
-  { name: 'Settings', href: '/settings', icon: Cog6ToothIcon, active: true },
+  { name: 'Profile', href: '/profile', icon: Cog6ToothIcon, active: true },
   { name: 'Refer Friends', href: '/referrals', icon: UserGroupIcon, active: true },
   { name: 'Share', href: '/share', icon: ShareIcon, active: true },
   { name: 'Subscription', href: '/subscription', icon: CreditCardIcon, active: false }

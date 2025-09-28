@@ -73,7 +73,7 @@ export default function EditGirlModal({ isOpen, onClose, girl }: EditGirlModalPr
     setIsSubmitting(true);
 
     try {
-      updateGirl(girl.id, {
+      const success = await updateGirl(girl.id, {
         name: formData.name.trim(),
         age: parseInt(formData.age),
         nationality: formData.nationality.trim(),
@@ -86,8 +86,12 @@ export default function EditGirlModal({ isOpen, onClose, girl }: EditGirlModalPr
           : undefined
       });
 
-      setErrors({});
-      onClose();
+      if (success) {
+        setErrors({});
+        onClose();
+      } else {
+        throw new Error('Failed to update girl');
+      }
     } catch (error) {
       console.error('Error updating girl:', error);
     } finally {

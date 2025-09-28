@@ -19,10 +19,10 @@ export default function AddDataPage({ params }: AddDataPageProps) {
   // This currently shows a warning but the app functions correctly
   const id = (params as any).id;
   const { getGirlById, girls } = useGirls();
-  const { addDataEntry, updateDataEntry, deleteDataEntry, getEntriesByGirlId } = useDataEntries();
+  const { addDataEntry, updateDataEntry, deleteDataEntry, getEntriesForGirl } = useDataEntries();
 
   const girl = getGirlById(id);
-  const entries = getEntriesByGirlId(id);
+  const entries = getEntriesForGirl(id);
   const metrics = calculateMetricsForGirl(entries);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -92,16 +92,20 @@ export default function AddDataPage({ params }: AddDataPageProps) {
         numberOfNuts: parseInt(formData.numberOfNuts)
       };
 
-      addDataEntry(entryData);
+      const result = await addDataEntry(entryData);
 
-      // Reset form
-      setFormData({
-        date: new Date().toISOString().split('T')[0],
-        amountSpent: '',
-        hours: '',
-        minutes: '',
-        numberOfNuts: ''
-      });
+      if (result) {
+        // Reset form
+        setFormData({
+          date: new Date().toISOString().split('T')[0],
+          amountSpent: '',
+          hours: '',
+          minutes: '',
+          numberOfNuts: ''
+        });
+      } else {
+        throw new Error('Failed to save entry');
+      }
     } catch (error) {
       console.error('Error saving entry:', error);
       alert('Error saving entry. Please try again.');
@@ -114,11 +118,11 @@ export default function AddDataPage({ params }: AddDataPageProps) {
     setEditingEntry(entry);
   };
 
-  const handleDeleteEntry = (entryId: string) => {
+  const handleDeleteEntry = async (entryId: string) => {
     if (editingEntry?.id === entryId) {
       setEditingEntry(null);
     }
-    deleteDataEntry(entryId);
+    await deleteDataEntry(entryId);
   };
 
   const handleCancelEdit = () => {

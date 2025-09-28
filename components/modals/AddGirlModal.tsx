@@ -58,7 +58,7 @@ export default function AddGirlModal({ isOpen, onClose }: AddGirlModalProps) {
     setIsSubmitting(true);
 
     try {
-      const newGirl = addGirl({
+      const newGirl = await addGirl({
         name: formData.name.trim(),
         age: parseInt(formData.age),
         nationality: formData.nationality.trim(),
@@ -71,22 +71,26 @@ export default function AddGirlModal({ isOpen, onClose }: AddGirlModalProps) {
           : undefined
       });
 
-      // Reset form
-      setFormData({
-        name: '',
-        age: '',
-        nationality: '',
-        rating: 6.0,
-        isActive: true,
-        ethnicity: undefined,
-        hairColor: undefined,
-        location: undefined
-      });
-      setErrors({});
-      onClose();
+      if (newGirl) {
+        // Reset form
+        setFormData({
+          name: '',
+          age: '',
+          nationality: '',
+          rating: 6.0,
+          isActive: true,
+          ethnicity: undefined,
+          hairColor: undefined,
+          location: undefined
+        });
+        setErrors({});
+        onClose();
 
-      // Auto-redirect to Add Data page for the new girl
-      router.push(`/girls/${newGirl.id}/add-data`);
+        // Auto-redirect to Add Data page for the new girl
+        router.push(`/girls/${newGirl.id}/add-data`);
+      } else {
+        throw new Error('Failed to create girl');
+      }
     } catch (error) {
       console.error('Error adding girl:', error);
     } finally {

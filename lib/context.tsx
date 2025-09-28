@@ -8,6 +8,9 @@ export { useSupabaseGirls as useGirls } from './hooks/useSupabaseGirls'
 export { useSupabaseDataEntries as useDataEntries } from './hooks/useSupabaseDataEntries'
 export { useSupabaseGlobalStats as useGlobalStats } from './hooks/useSupabaseGlobalStats'
 
+// Export user profile hook
+export { useUserProfile } from './hooks/useUserProfile'
+
 interface AppContextType {
   // Add global app state here as needed
   theme: 'dark' | 'light'

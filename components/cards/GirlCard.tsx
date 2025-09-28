@@ -16,8 +16,8 @@ export default function GirlCard({ girl, onEdit }: GirlCardProps) {
   const hasData = girl.totalEntries > 0;
   const { updateGirl } = useGirls();
 
-  const toggleStatus = () => {
-    updateGirl(girl.id, { isActive: !girl.isActive });
+  const toggleStatus = async () => {
+    await updateGirl(girl.id, { isActive: !girl.isActive });
   };
 
   return (

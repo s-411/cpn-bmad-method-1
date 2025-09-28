@@ -548,7 +548,7 @@ export default function AnalyticsPage() {
                           cy="50%"
                           outerRadius={100}
                           dataKey="value"
-                          label={({ name, percentage }: { name: string; percentage: number }) => `${name}: ${percentage.toFixed(1)}%`}
+                          label={(entry: any) => `${entry.name}: ${entry.percentage.toFixed(1)}%`}
                           labelLine={false}
                         >
                           {spendingDistribution.map((entry, index) => {
@@ -694,7 +694,7 @@ export default function AnalyticsPage() {
                           cy="50%"
                           outerRadius={100}
                           dataKey="value"
-                          label={({ name, percentage }: { name: string; percentage: number }) => `${name}: ${percentage.toFixed(1)}%`}
+                          label={(entry: any) => `${entry.name}: ${entry.percentage.toFixed(1)}%`}
                           labelLine={false}
                         >
                           {timeDistribution.map((entry, index) => {
@@ -733,7 +733,7 @@ export default function AnalyticsPage() {
                           cy="50%"
                           outerRadius={100}
                           dataKey="value"
-                          label={({ name, percentage }: { name: string; percentage: number }) => `${name}: ${percentage.toFixed(1)}%`}
+                          label={(entry: any) => `${entry.name}: ${entry.percentage.toFixed(1)}%`}
                           labelLine={false}
                         >
                           {costPerHourDistribution.filter(item => item.value > 0).map((entry, index) => {
