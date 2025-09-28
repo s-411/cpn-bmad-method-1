@@ -6,10 +6,17 @@ interface ShareContextType {
   state: {
     isShareModalOpen: boolean
     shareData: any
+    preferences: {
+      defaultPrivacy: string
+    }
+    history: any[]
   }
   actions: {
     openShareModal: (data: any) => void
     closeShareModal: () => void
+    generateStatCard: (data: any, options: any) => void
+    generateComparisonReport: (data: any, options: any) => void
+    toggleHistoryPanel: (open: boolean) => void
   }
 }
 
@@ -18,6 +25,8 @@ const ShareContext = createContext<ShareContextType | undefined>(undefined)
 export function ShareProvider({ children }: { children: ReactNode }) {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [shareData, setShareData] = useState(null)
+  const [preferences] = useState({ defaultPrivacy: 'public' })
+  const [history] = useState<any[]>([])
 
   const openShareModal = (data: any) => {
     setShareData(data)
@@ -29,15 +38,35 @@ export function ShareProvider({ children }: { children: ReactNode }) {
     setShareData(null)
   }
 
+  const generateStatCard = (data: any, options: any) => {
+    // Placeholder implementation for stat card generation
+    console.log('Generating stat card:', data, options)
+  }
+
+  const generateComparisonReport = (data: any, options: any) => {
+    // Placeholder implementation for comparison report generation
+    console.log('Generating comparison report:', data, options)
+  }
+
+  const toggleHistoryPanel = (open: boolean) => {
+    // Placeholder implementation for history panel toggle
+    console.log('Toggle history panel:', open)
+  }
+
   return (
     <ShareContext.Provider value={{
       state: {
         isShareModalOpen,
         shareData,
+        preferences,
+        history,
       },
       actions: {
         openShareModal,
         closeShareModal,
+        generateStatCard,
+        generateComparisonReport,
+        toggleHistoryPanel,
       },
     }}>
       {children}
