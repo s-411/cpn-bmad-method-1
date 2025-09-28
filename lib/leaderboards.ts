@@ -74,6 +74,25 @@ export const leaderboardGroupsStorage = {
   getById: (id: string): LeaderboardGroup | null => {
     const groups = leaderboardGroupsStorage.getAll()
     return groups.find(g => g.id === id) || null
+  },
+
+  create: (name: string, isPrivate: boolean = false): LeaderboardGroup => {
+    const group: LeaderboardGroup = {
+      id: `group-${Date.now()}`,
+      name,
+      createdBy: 'current-user', // In real app, this would be actual user ID
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      inviteToken: `invite-${Math.random().toString(36).substr(2, 9)}`,
+      isPrivate,
+      memberCount: 0
+    }
+    leaderboardGroupsStorage.add(group)
+    return group
+  },
+
+  delete: (groupId: string) => {
+    leaderboardGroupsStorage.remove(groupId)
   }
 }
 
@@ -121,6 +140,26 @@ export const leaderboardMembersStorage = {
         efficiency: 0
       }
     }
+    leaderboardMembersStorage.add(member)
+  },
+
+  addMockMember: (groupId: string) => {
+    const mockNames = ['Player1', 'Player2', 'Player3', 'TopScorer', 'Rookie']
+    const randomName = mockNames[Math.floor(Math.random() * mockNames.length)]
+    const member: LeaderboardMember = {
+      id: `mock-${Date.now()}`,
+      groupId,
+      userId: `mock-user-${Date.now()}`,
+      username: `${randomName}${Math.floor(Math.random() * 1000)}`,
+      joinedAt: new Date(),
+      stats: {
+        totalSpent: Math.floor(Math.random() * 1000) + 100,
+        totalNuts: Math.floor(Math.random() * 50) + 10,
+        efficiency: 0
+      }
+    }
+    // Calculate efficiency
+    member.stats.efficiency = member.stats.totalSpent / member.stats.totalNuts
     leaderboardMembersStorage.add(member)
   }
 }

@@ -45,7 +45,7 @@ export default function GroupDashboardPage({ params }: GroupDashboardPageProps) 
       return;
     }
 
-    const members = leaderboardMembersStorage.getByGroupId(groupId);
+    const members = leaderboardMembersStorage.getByGroup(groupId);
     const groupRankings = calculateRankings(members);
 
     setGroup(groupData);
