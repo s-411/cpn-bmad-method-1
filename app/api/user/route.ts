@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
 
     // If no profile exists, create one
     if (!userProfile) {
-      const { data: newProfile, error: createError } = await supabase
+      const { data: newProfile, error: createError } = await (supabase as any)
         .from('users')
         .insert({
           id: user.id,
@@ -87,7 +87,7 @@ export async function PUT(request: NextRequest) {
     }
     if (body.stripeCustomerId !== undefined) updates.stripe_customer_id = body.stripeCustomerId
 
-    const { data: userProfile, error } = await supabase
+    const { data: userProfile, error } = await (supabase as any)
       .from('users')
       .update(updates)
       .eq('id', user.id)

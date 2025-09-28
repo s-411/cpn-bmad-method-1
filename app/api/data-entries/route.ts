@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
       return createErrorResponse('Girl not found or access denied', 404)
     }
 
-    const { data: dataEntry, error } = await supabase
+    const { data: dataEntry, error } = await (supabase as any)
       .from('data_entries')
       .insert({
         user_id: user.id,

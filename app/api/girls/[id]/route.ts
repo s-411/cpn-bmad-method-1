@@ -73,7 +73,7 @@ export async function PUT(
     if (body.nationality !== undefined) updates.nationality = body.nationality
     if (body.isActive !== undefined) updates.is_active = body.isActive
 
-    const { data: girl, error } = await supabase
+    const { data: girl, error } = await (supabase as any)
       .from('girls')
       .update(updates)
       .eq('id', params.id)

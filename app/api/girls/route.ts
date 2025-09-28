@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       return createErrorResponse('Rating must be between 5.0 and 10.0', 400)
     }
 
-    const { data: girl, error } = await supabase
+    const { data: girl, error } = await (supabase as any)
       .from('girls')
       .insert({
         user_id: user.id,
