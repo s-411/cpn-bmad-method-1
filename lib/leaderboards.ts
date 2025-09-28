@@ -33,3 +33,84 @@ export function useLeaderboards() {
     updateStats: async () => null,
   }
 }
+
+// Storage utilities for leaderboards
+export const leaderboardGroupsStorage = {
+  getAll: (): LeaderboardGroup[] => {
+    if (typeof window === 'undefined') return []
+    try {
+      const stored = localStorage.getItem('leaderboard-groups')
+      return stored ? JSON.parse(stored) : []
+    } catch {
+      return []
+    }
+  },
+
+  save: (groups: LeaderboardGroup[]) => {
+    if (typeof window === 'undefined') return
+    try {
+      localStorage.setItem('leaderboard-groups', JSON.stringify(groups))
+    } catch {
+      // Handle storage errors silently
+    }
+  },
+
+  add: (group: LeaderboardGroup) => {
+    const groups = leaderboardGroupsStorage.getAll()
+    groups.push(group)
+    leaderboardGroupsStorage.save(groups)
+  },
+
+  remove: (groupId: string) => {
+    const groups = leaderboardGroupsStorage.getAll().filter(g => g.id !== groupId)
+    leaderboardGroupsStorage.save(groups)
+  }
+}
+
+export const leaderboardMembersStorage = {
+  getByGroup: (groupId: string): LeaderboardMember[] => {
+    if (typeof window === 'undefined') return []
+    try {
+      const stored = localStorage.getItem(`leaderboard-members-${groupId}`)
+      return stored ? JSON.parse(stored) : []
+    } catch {
+      return []
+    }
+  },
+
+  save: (groupId: string, members: LeaderboardMember[]) => {
+    if (typeof window === 'undefined') return
+    try {
+      localStorage.setItem(`leaderboard-members-${groupId}`, JSON.stringify(members))
+    } catch {
+      // Handle storage errors silently
+    }
+  },
+
+  add: (member: LeaderboardMember) => {
+    const members = leaderboardMembersStorage.getByGroup(member.groupId)
+    members.push(member)
+    leaderboardMembersStorage.save(member.groupId, members)
+  },
+
+  remove: (groupId: string, memberId: string) => {
+    const members = leaderboardMembersStorage.getByGroup(groupId).filter(m => m.id !== memberId)
+    leaderboardMembersStorage.save(groupId, members)
+  }
+}
+
+export function calculateRankings(members: LeaderboardMember[]) {
+  return members
+    .map(member => ({
+      ...member,
+      rank: 1,
+      totalSpent: member.stats?.totalSpent || 0,
+      totalNuts: member.stats?.totalNuts || 0,
+      efficiency: member.stats?.totalNuts > 0 ? (member.stats.totalSpent / member.stats.totalNuts) : 0
+    }))
+    .sort((a, b) => a.efficiency - b.efficiency) // Lower cost per nut is better
+    .map((member, index) => ({
+      ...member,
+      rank: index + 1
+    }))
+}

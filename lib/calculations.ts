@@ -125,3 +125,141 @@ export function getCurrentWeekStats(entries: any[]) {
 
   return getDateRangeStats(entries, startOfWeek, now)
 }
+
+// Additional functions for analytics page
+export function formatTimeDetailed(minutes: number): string {
+  const hours = Math.floor(minutes / 60)
+  const mins = Math.round(minutes % 60)
+  return `${hours}h ${mins}m`
+}
+
+export function getMonthlyTrends(entries: any[]) {
+  const monthlyData: { [key: string]: { spent: number, nuts: number, time: number } } = {}
+
+  entries.forEach(entry => {
+    const date = new Date(entry.date)
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+
+    if (!monthlyData[monthKey]) {
+      monthlyData[monthKey] = { spent: 0, nuts: 0, time: 0 }
+    }
+
+    monthlyData[monthKey].spent += entry.amountSpent || 0
+    monthlyData[monthKey].nuts += entry.numberOfNuts || 0
+    monthlyData[monthKey].time += entry.durationMinutes || 0
+  })
+
+  return Object.entries(monthlyData)
+    .map(([month, data]) => ({
+      month,
+      spent: data.spent,
+      nuts: data.nuts,
+      time: data.time
+    }))
+    .sort((a, b) => a.month.localeCompare(b.month))
+}
+
+export function getCostEfficiencyTrends(entries: any[]) {
+  const monthlyData = getMonthlyTrends(entries)
+
+  return monthlyData.map(item => ({
+    month: item.month,
+    costPerNut: item.nuts > 0 ? item.spent / item.nuts : 0
+  }))
+}
+
+export function getSpendingDistribution(girls: any[]) {
+  const total = girls.reduce((sum, girl) => sum + (girl.metrics?.totalSpent || 0), 0)
+
+  return girls.map(girl => ({
+    name: girl.name,
+    value: girl.metrics?.totalSpent || 0,
+    percentage: total > 0 ? ((girl.metrics?.totalSpent || 0) / total) * 100 : 0
+  })).filter(item => item.value > 0)
+}
+
+export function getEfficiencyRatingCorrelation(girls: any[]) {
+  return girls
+    .filter(girl => girl.metrics && girl.metrics.totalNuts > 0)
+    .map(girl => ({
+      name: girl.name,
+      rating: girl.rating || 0,
+      costPerNut: girl.metrics.costPerNut || 0,
+      nutsPerHour: girl.metrics.totalTime > 0 ? (girl.metrics.totalNuts / (girl.metrics.totalTime / 60)) : 0
+    }))
+}
+
+export function getROIRanking(girls: any[]) {
+  return girls
+    .filter(girl => girl.metrics && girl.metrics.totalNuts > 0)
+    .map(girl => ({
+      name: girl.name,
+      rating: girl.rating || 0,
+      costPerNut: girl.metrics.costPerNut || 0,
+      nutsPerHour: girl.metrics.totalTime > 0 ? (girl.metrics.totalNuts / (girl.metrics.totalTime / 60)).toFixed(2) : '0.00',
+      efficiencyScore: calculateEfficiencyScore(girl.metrics.costPerNut || 0)
+    }))
+    .sort((a, b) => b.efficiencyScore - a.efficiencyScore)
+}
+
+export function getEnhancedGlobalStats(girls: any[], allEntries: any[], filteredEntries: any[]) {
+  const activeProfilesInRange = girls.filter(girl => {
+    const hasEntriesInRange = filteredEntries.some(entry => entry.girlId === girl.id)
+    return hasEntriesInRange && (girl.isActive !== false)
+  }).length
+
+  return {
+    activeProfilesInRange,
+    totalEntriesInRange: filteredEntries.length,
+    totalEntriesAllTime: allEntries.length
+  }
+}
+
+export function calculateMetricsForGirl(entries: any[]) {
+  const totalSpent = entries.reduce((sum, entry) => sum + (entry.amountSpent || 0), 0)
+  const totalNuts = entries.reduce((sum, entry) => sum + (entry.numberOfNuts || 0), 0)
+  const totalTime = entries.reduce((sum, entry) => sum + (entry.durationMinutes || 0), 0)
+
+  return {
+    totalSpent,
+    totalNuts,
+    totalTime,
+    totalEntries: entries.length,
+    costPerNut: calculateCostPerNut(totalSpent, totalNuts),
+    timePerNut: calculateTimePerNut(totalTime, totalNuts),
+    costPerHour: calculateCostPerHour(totalSpent, totalTime),
+    averageSessionDuration: calculateAverageSessionDuration(totalTime, entries.length),
+    productivity: calculateProductivity(totalNuts, totalTime),
+    efficiencyScore: calculateEfficiencyScore(calculateCostPerNut(totalSpent, totalNuts))
+  }
+}
+
+export function sortGirlsByField(girls: any[], field: string, direction: 'asc' | 'desc' = 'desc') {
+  return [...girls].sort((a, b) => {
+    let aValue = 0
+    let bValue = 0
+
+    switch (field) {
+      case 'totalSpent':
+        aValue = a.metrics?.totalSpent || 0
+        bValue = b.metrics?.totalSpent || 0
+        break
+      case 'totalNuts':
+        aValue = a.metrics?.totalNuts || 0
+        bValue = b.metrics?.totalNuts || 0
+        break
+      case 'costPerNut':
+        aValue = a.metrics?.costPerNut || 0
+        bValue = b.metrics?.costPerNut || 0
+        break
+      case 'rating':
+        aValue = a.rating || 0
+        bValue = b.rating || 0
+        break
+      default:
+        return 0
+    }
+
+    return direction === 'asc' ? aValue - bValue : bValue - aValue
+  })
+}
