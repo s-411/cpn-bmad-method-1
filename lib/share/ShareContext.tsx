@@ -3,10 +3,14 @@
 import { createContext, useContext, useState, ReactNode } from 'react'
 
 interface ShareContextType {
-  isShareModalOpen: boolean
-  shareData: any
-  openShareModal: (data: any) => void
-  closeShareModal: () => void
+  state: {
+    isShareModalOpen: boolean
+    shareData: any
+  }
+  actions: {
+    openShareModal: (data: any) => void
+    closeShareModal: () => void
+  }
 }
 
 const ShareContext = createContext<ShareContextType | undefined>(undefined)
@@ -27,10 +31,14 @@ export function ShareProvider({ children }: { children: ReactNode }) {
 
   return (
     <ShareContext.Provider value={{
-      isShareModalOpen,
-      shareData,
-      openShareModal,
-      closeShareModal,
+      state: {
+        isShareModalOpen,
+        shareData,
+      },
+      actions: {
+        openShareModal,
+        closeShareModal,
+      },
     }}>
       {children}
     </ShareContext.Provider>
