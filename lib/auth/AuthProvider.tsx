@@ -17,11 +17,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const supabase = createSupabaseBrowser()
 
+  const createUserIfNotExists = async (user: User) => {
+    if (!user.email) return
+
+    try {
+      await (supabase as any).rpc('create_user_if_not_exists', { user_email: user.email })
+    } catch (error) {
+      console.error('Error creating user record:', error)
+    }
+  }
+
   useEffect(() => {
     // Get initial session
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user ?? null)
+      const user = session?.user ?? null
+      setUser(user)
+
+      // Create user record if authenticated
+      if (user) {
+        await createUserIfNotExists(user)
+      }
+
       setLoading(false)
     }
 
@@ -29,8 +46,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setUser(session?.user ?? null)
+      async (event, session) => {
+        const user = session?.user ?? null
+        setUser(user)
+
+        // Create user record if authenticated
+        if (user && event === 'SIGNED_IN') {
+          await createUserIfNotExists(user)
+        }
+
         setLoading(false)
       }
     )
