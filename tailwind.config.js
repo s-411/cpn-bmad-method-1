@@ -4,18 +4,23 @@ module.exports = {
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './lib/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
       colors: {
-        'cpn-dark': '#0A0A0A',
-        'cpn-dark2': '#111111',
-        'cpn-gray': '#6B7280',
-        'cpn-white': '#FFFFFF',
-        'cpn-yellow': '#FDE047',
+        'cpn-dark': '#1f1f1f',
+        'cpn-dark2': '#2a2a2a',
+        'cpn-gray': '#ababab',
+        'cpn-white': '#ffffff',
+        'cpn-yellow': '#f2f661',
       },
       fontFamily: {
-        'heading': ['Inter', 'system-ui', 'sans-serif'],
+        'heading': ['National2Condensed', 'Arial Black', 'sans-serif'],
+        'body': ['ESKlarheit', 'Inter', 'system-ui', 'sans-serif'],
+      },
+      borderRadius: {
+        'cpn': '100px',
       },
     },
   },
