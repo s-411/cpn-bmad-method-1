@@ -19,6 +19,16 @@
   font-display: swap;
 }
 
+/* Font fallback chain fixes */
+.font-heading, h1, h2, h3, h4, h5, h6 {
+  font-family: 'National2Condensed', 'Arial Black', 'Arial', sans-serif !important;
+  font-weight: bold !important;
+}
+
+.font-body, body, p, span, div {
+  font-family: 'ESKlarheit', 'Inter', 'Arial', sans-serif !important;
+}
+
 /* CSS Custom Properties */
 :root {
   --color-cpn-yellow: #f2f661;
@@ -37,7 +47,7 @@
 body {
   background-color: var(--color-cpn-dark) !important;
   color: var(--color-cpn-white) !important;
-  font-family: var(--font-family-body);
+  font-family: 'ESKlarheit', 'Inter', 'Arial', sans-serif !important;
 }
 
 /* Force dark theme */
@@ -53,8 +63,8 @@ html, body {
 
 /* Typography */
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-family-heading);
-  font-weight: bold;
+  font-family: 'National2Condensed', 'Arial Black', 'Arial', sans-serif !important;
+  font-weight: bold !important;
 }
 
 /* Custom Utility Classes */

@@ -27,6 +27,10 @@ export default function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="preload" href="/fonts/National-2-Condensed-Bold.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
+        <link rel="preload" href="/fonts/ESKlarheitGrotesk-Rg.otf" as="font" type="font/otf" crossOrigin="anonymous" />
+      </head>
       <body className="bg-cpn-dark text-cpn-white min-h-screen" suppressHydrationWarning>
         <AppProvider>
           {/* <ShareProvider> */}
