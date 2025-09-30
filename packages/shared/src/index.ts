@@ -4,6 +4,6 @@ export * from './constants';
 export * from './utils';
 
 // Supabase clients
-export { supabase, type SupabaseClient } from './lib/supabase';
+// NOTE: Use createSupabaseBrowser() for client-side operations to prevent multiple auth instances
 export { createSupabaseBrowser } from './lib/supabase-browser';
 export { createSupabaseServer, createSupabaseServerAdmin } from './lib/supabase-server';
