@@ -2,27 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { PlusIcon, UserGroupIcon, TrophyIcon, LinkIcon, EyeIcon } from '@heroicons/react/24/outline';
-import { leaderboardGroupsStorage, initializeSampleGroups } from '@/lib/leaderboards';
-import { LeaderboardGroup } from '@/lib/types';
+import { useSupabaseLeaderboards } from '@/lib/hooks/useSupabaseLeaderboards';
+import type { LeaderboardGroup } from '@cpn/shared';
 
 export default function LeaderboardsPage() {
-  const [groups, setGroups] = useState<LeaderboardGroup[]>([]);
+  const { groups, loading, createGroup } = useSupabaseLeaderboards();
   const [isCreating, setIsCreating] = useState(false);
   const [groupName, setGroupName] = useState('');
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    // Initialize sample data on first load
-    initializeSampleGroups();
-    loadGroups();
-  }, []);
-
-  const loadGroups = () => {
-    const userGroups = leaderboardGroupsStorage.getAll();
-    setGroups(userGroups);
-  };
-
-  const handleCreateGroup = () => {
+  const handleCreateGroup = async () => {
     if (!groupName.trim()) {
       setError('Group name is required');
       return;
@@ -34,28 +23,39 @@ export default function LeaderboardsPage() {
     }
 
     try {
-      const newGroup = leaderboardGroupsStorage.create(
-        groupName.trim(),
-        false // isPrivate = false for now
-      );
-      
-      setGroupName('');
-      setError('');
-      setIsCreating(false);
-      loadGroups();
-      
-      // Redirect to the new group
-      window.location.href = `/leaderboards/${newGroup.id}`;
+      const newGroup = await createGroup(groupName.trim(), false);
+
+      if (newGroup) {
+        setGroupName('');
+        setError('');
+        setIsCreating(false);
+
+        // Redirect to the new group
+        window.location.href = `/leaderboards/${newGroup.id}`;
+      } else {
+        setError('Failed to create group');
+      }
     } catch (error) {
       setError('Failed to create group');
     }
   };
 
   const copyInviteLink = (group: LeaderboardGroup) => {
-    const inviteLink = `${window.location.origin}/join/${group.inviteToken}`;
+    const inviteLink = `${window.location.origin}/join/${group.invite_token}`;
     navigator.clipboard.writeText(inviteLink);
     // TODO: Add success toast notification
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-cpn-dark flex items-center justify-center">
+        <div className="animate-fade-in">
+          <div className="w-8 h-8 border-2 border-cpn-yellow border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-cpn-gray">Loading groups...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (groups.length === 0) {
     return (
@@ -203,14 +203,14 @@ export default function LeaderboardsPage() {
                 <div>
                   <h3 className="text-xl font-heading text-cpn-white mb-1">{group.name}</h3>
                   <p className="text-cpn-gray text-sm">
-                    {group.memberCount} member{group.memberCount !== 1 ? 's' : ''}
+                    {group.member_count} member{group.member_count !== 1 ? 's' : ''}
                   </p>
                 </div>
                 <TrophyIcon className="w-6 h-6 text-cpn-yellow" />
               </div>
               
               <div className="text-sm text-cpn-gray mb-4">
-                Created {group.createdAt.toLocaleDateString()}
+                Created {new Date(group.created_at).toLocaleDateString()}
               </div>
 
               <div className="flex gap-2">

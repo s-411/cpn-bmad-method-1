@@ -9,8 +9,8 @@ import {
   XMarkIcon,
   ArrowRightIcon
 } from '@heroicons/react/24/outline';
-import { leaderboardGroupsStorage, leaderboardMembersStorage } from '@/lib/leaderboards';
-import { LeaderboardGroup } from '@/lib/types';
+import { useSupabaseLeaderboards } from '@/lib/hooks/useSupabaseLeaderboards';
+import type { LeaderboardGroup } from '@cpn/shared';
 
 interface JoinInvitePageProps {
   params: Promise<{
@@ -21,6 +21,7 @@ interface JoinInvitePageProps {
 export default function JoinInvitePage({ params }: JoinInvitePageProps) {
   const router = useRouter();
   const token = (params as any).token; // TODO: Next.js 15 params Promise handling
+  const { joinGroup, loading: leaderboardLoading } = useSupabaseLeaderboards();
   const [group, setGroup] = useState<LeaderboardGroup | null>(null);
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState('');
@@ -32,19 +33,15 @@ export default function JoinInvitePage({ params }: JoinInvitePageProps) {
     loadGroupData();
   }, [token]);
 
-  const loadGroupData = () => {
-    const groupData = leaderboardGroupsStorage.getByInviteToken(token);
-    if (!groupData) {
-      setNotFound(true);
-      setLoading(false);
-      return;
-    }
-
-    setGroup(groupData);
+  const loadGroupData = async () => {
+    // For now, we'll need to implement a method to find group by invite token
+    // This should be added to the useSupabaseLeaderboards hook
+    setNotFound(true);
     setLoading(false);
+    // TODO: Implement group lookup by invite token in Supabase
   };
 
-  const handleAcceptInvite = () => {
+  const handleAcceptInvite = async () => {
     if (!username.trim()) {
       setError('Username is required');
       return;
@@ -61,11 +58,16 @@ export default function JoinInvitePage({ params }: JoinInvitePageProps) {
     setError('');
 
     try {
-      // Add member to group
-      leaderboardMembersStorage.addMember(group.id, `user-${Date.now()}`, username.trim());
-      
-      // Redirect to group dashboard
-      router.push(`/leaderboards/${group.id}`);
+      // Use the Supabase joinGroup method
+      const success = await joinGroup(token);
+
+      if (success) {
+        // Redirect to leaderboards page for now
+        router.push('/leaderboards');
+      } else {
+        setError('Failed to join group');
+        setIsJoining(false);
+      }
     } catch (error) {
       setError('Failed to join group');
       setIsJoining(false);

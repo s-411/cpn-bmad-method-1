@@ -81,6 +81,38 @@ export interface OnboardingSession {
   created_at: string;
 }
 
+export interface LeaderboardGroup {
+  id: string;
+  user_id: string;
+  name: string;
+  created_by: string;
+  invite_token: string;
+  is_private: boolean;
+  member_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LeaderboardMember {
+  id: string;
+  group_id: string;
+  user_id: string;
+  username: string;
+  stats: LeaderboardStats;
+  joined_at: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LeaderboardStats {
+  totalSpent: number;
+  totalNuts: number;
+  costPerNut: number;
+  totalTime: number; // in minutes
+  totalGirls: number;
+  efficiency: number; // calculated ranking metric
+}
+
 // Calculated metrics interface
 export interface GirlMetrics {
   total_spent: number;

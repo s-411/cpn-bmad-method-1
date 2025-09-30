@@ -24,7 +24,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useGirls, useDataEntries } from '@/lib/context';
 import { leaderboardGroupsStorage, leaderboardMembersStorage } from '@/lib/leaderboards';
-import { LeaderboardGroup } from '@/lib/types';
+import { LeaderboardGroup } from '@/lib/leaderboards';
 import { useSupabaseSettings } from '@/lib/hooks/useSupabaseSettings';
 import Link from 'next/link';
 
@@ -340,9 +340,9 @@ export default function SettingsPage() {
                       <div>
                         <h3 className="text-cpn-white font-medium">{group.name}</h3>
                         <div className="flex items-center gap-4 text-sm text-cpn-gray">
-                          <span>{group.memberCount} members</span>
+                          <span>{group.member_count} members</span>
                           <span>•</span>
-                          <span>Joined {group.createdAt.toLocaleDateString()}</span>
+                          <span>Joined {group.created_at.toLocaleDateString()}</span>
                         </div>
                       </div>
                     </div>

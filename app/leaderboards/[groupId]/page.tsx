@@ -9,12 +9,15 @@ import {
   ArrowLeftIcon,
   ClipboardDocumentIcon
 } from '@heroicons/react/24/outline';
-import { 
-  leaderboardGroupsStorage, 
-  leaderboardMembersStorage, 
-  calculateRankings 
-} from '@/lib/leaderboards';
-import { LeaderboardGroup, LeaderboardRanking } from '@/lib/types';
+import { useSupabaseLeaderboards } from '@/lib/hooks/useSupabaseLeaderboards';
+import { calculateRankings } from '@/lib/utils/leaderboardUtils';
+import type { LeaderboardGroup, LeaderboardMember } from '@cpn/shared';
+
+interface LeaderboardRanking {
+  rank: number;
+  member: LeaderboardMember;
+  change: number;
+}
 import { formatCurrency } from '@/lib/calculations';
 
 interface GroupDashboardPageProps {
@@ -26,52 +29,41 @@ interface GroupDashboardPageProps {
 export default function GroupDashboardPage({ params }: GroupDashboardPageProps) {
   const router = useRouter();
   const groupId = (params as any).groupId; // TODO: Next.js 15 params Promise handling
+  const { groups, members, loading: leaderboardLoading, refreshMembers } = useSupabaseLeaderboards();
   const [group, setGroup] = useState<LeaderboardGroup | null>(null);
   const [rankings, setRankings] = useState<LeaderboardRanking[]>([]);
-  const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
-  // TODO: Next.js 15 - params is now a Promise, will be fixed in future version
-  // groupId already defined above
+  const loading = leaderboardLoading;
 
   useEffect(() => {
-    loadGroupData();
-  }, [groupId]);
-
-  const loadGroupData = () => {
-    const groupData = leaderboardGroupsStorage.getById(groupId);
-    if (!groupData) {
-      router.push('/leaderboards');
-      return;
+    if (groups.length > 0) {
+      const foundGroup = groups.find(g => g.id === groupId);
+      if (foundGroup) {
+        setGroup(foundGroup);
+        refreshMembers(groupId);
+      } else {
+        router.push('/leaderboards');
+      }
     }
+  }, [groups, groupId, router, refreshMembers]);
 
-    const members = leaderboardMembersStorage.getByGroup(groupId);
-    const groupRankings = calculateRankings(members);
-
-    setGroup(groupData);
-    setRankings(groupRankings);
-    setLoading(false);
-  };
+  useEffect(() => {
+    if (members.length > 0) {
+      const groupRankings = calculateRankings(members);
+      setRankings(groupRankings);
+    }
+  }, [members]);
 
   const copyInviteLink = async () => {
     if (!group) return;
     
-    const inviteLink = `${window.location.origin}/join/${group.inviteToken}`;
+    const inviteLink = `${window.location.origin}/join/${group.invite_token}`;
     await navigator.clipboard.writeText(inviteLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const addMockMember = () => {
-    if (!group) return;
-    
-    try {
-      leaderboardMembersStorage.addMockMember(group.id);
-      loadGroupData();
-    } catch (error) {
-      console.error('No more mock users available');
-    }
-  };
 
   if (loading) {
     return (
@@ -135,7 +127,7 @@ export default function GroupDashboardPage({ params }: GroupDashboardPageProps) 
                     </div>
                     <div className="bg-cpn-dark2/50 rounded-lg p-3">
                       <p className="text-cpn-yellow text-lg font-bold">
-                        {new Date(group.createdAt).toLocaleDateString()}
+                        {new Date(group.created_at).toLocaleDateString()}
                       </p>
                       <p className="text-cpn-gray text-xs">Created</p>
                     </div>
@@ -165,16 +157,7 @@ export default function GroupDashboardPage({ params }: GroupDashboardPageProps) 
                   </p>
                 </div>
 
-                {/* Mock data helper - Hidden but functionality preserved */}
-                <div className="border-t border-cpn-gray/20 pt-4 hidden">
-                  <button
-                    onClick={addMockMember}
-                    className="w-full py-2 px-4 text-cpn-gray border border-cpn-gray/30 rounded-lg hover:text-cpn-white hover:border-cpn-gray transition-all duration-200 text-sm"
-                  >
-                    <UserPlusIcon className="w-4 h-4 inline mr-2" />
-                    Add Test Member
-                  </button>
-                </div>
+                {/* Mock data helper - Hidden (removed for Supabase implementation) */}
               </div>
             </div>
           </div>
@@ -226,7 +209,7 @@ export default function GroupDashboardPage({ params }: GroupDashboardPageProps) 
                               {ranking.member.username}
                             </div>
                             <div className="text-xs text-cpn-gray">
-                              Joined {ranking.member.joinedAt.toLocaleDateString()}
+                              Joined {new Date(ranking.member.joined_at).toLocaleDateString()}
                             </div>
                           </td>
                           <td className="text-right">
