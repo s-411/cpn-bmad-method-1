@@ -23,9 +23,9 @@ import {
   UserGroupIcon
 } from '@heroicons/react/24/outline';
 import { useGirls, useDataEntries } from '@/lib/context';
-import { leaderboardGroupsStorage, leaderboardMembersStorage } from '@/lib/leaderboards';
 import { LeaderboardGroup } from '@/lib/leaderboards';
 import { useSupabaseSettings } from '@/lib/hooks/useSupabaseSettings';
+import { useSupabaseLeaderboards } from '@/lib/hooks/useSupabaseLeaderboards';
 import Link from 'next/link';
 
 const defaultAvatars = [
@@ -64,29 +64,25 @@ export default function SettingsPage() {
     updatePrivacySettings: updatePrivacySettingsSupabase
   } = useSupabaseSettings();
 
+  // Use Supabase leaderboards hook
+  const {
+    groups: userGroups,
+    loading: leaderboardsLoading,
+    leaveGroup
+  } = useSupabaseLeaderboards();
+
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [tempDisplayName, setTempDisplayName] = useState('');
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
 
-  // Leaderboards state
-  const [userGroups, setUserGroups] = useState<LeaderboardGroup[]>([]);
+  // Leaderboard modal state
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [groupToLeave, setGroupToLeave] = useState<LeaderboardGroup | null>(null);
 
-  // Load settings and user groups
+  // Load client-side state
   useEffect(() => {
     setIsClient(true);
-
-    // Load user groups
-    loadUserGroups();
   }, []);
-
-  const loadUserGroups = () => {
-    // Get all groups - in a real app, this would filter by user membership
-    // For now, we'll show all groups as if the user is a member
-    const allGroups = leaderboardGroupsStorage.getAll();
-    setUserGroups(allGroups);
-  };
 
   // Settings update functions (using Supabase)
   const updateDateTimeSettings = (updates: any) => {
@@ -128,16 +124,17 @@ export default function SettingsPage() {
     setShowLeaveModal(true);
   };
 
-  const confirmLeaveGroup = () => {
+  const confirmLeaveGroup = async () => {
     if (!groupToLeave) return;
-    
-    // In a real app, this would remove the user from the group
-    // For now, we'll just remove the group entirely for demo purposes
-    leaderboardGroupsStorage.delete(groupToLeave.id);
-    
-    loadUserGroups();
-    setShowLeaveModal(false);
-    setGroupToLeave(null);
+
+    try {
+      await leaveGroup(groupToLeave.id);
+      setShowLeaveModal(false);
+      setGroupToLeave(null);
+    } catch (error) {
+      console.error('Error leaving group:', error);
+      // TODO: Show error toast
+    }
   };
 
   const cancelLeaveGroup = () => {
@@ -175,7 +172,7 @@ export default function SettingsPage() {
   const accountAge = isClient ? Math.floor((new Date().getTime() - accountCreatedDate.getTime()) / (1000 * 60 * 60 * 24)) : 0;
 
   // Show loading state while settings are loading
-  if (settingsLoading) {
+  if (settingsLoading || leaderboardsLoading) {
     return (
       <div className="min-h-screen bg-cpn-dark flex items-center justify-center">
         <div className="text-cpn-gray">Loading settings...</div>
@@ -342,7 +339,7 @@ export default function SettingsPage() {
                         <div className="flex items-center gap-4 text-sm text-cpn-gray">
                           <span>{group.member_count} members</span>
                           <span>•</span>
-                          <span>Joined {group.created_at.toLocaleDateString()}</span>
+                          <span>Joined {new Date(group.created_at).toLocaleDateString()}</span>
                         </div>
                       </div>
                     </div>
