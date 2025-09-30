@@ -10,13 +10,32 @@ export function createSupabaseBrowser() {
     return supabaseBrowserInstance
   }
 
+  // Check environment variables
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('Missing Supabase environment variables in browser client:', {
+      url: !!supabaseUrl,
+      key: !!supabaseAnonKey
+    })
+
+    // Return a mock client that doesn't crash
+    return new Proxy({}, {
+      get(target, prop) {
+        console.warn(`Supabase browser client not available: attempted to access ${String(prop)}`)
+        return () => Promise.reject(new Error('Supabase browser client not initialized'))
+      }
+    }) as any
+  }
+
   // Project reference for cookie filtering
   const PROJECT_REF = 'elaecgbjbxwcgguhtomz'
 
   // Create new instance
   supabaseBrowserInstance = createBrowserClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         get(name: string) {

@@ -5,6 +5,7 @@ import { AppProvider } from '@/lib/context'
 // import { ShareProvider } from '@/lib/share/ShareContext'
 // import ShareModalWrapper from '@/components/sharing/ShareModalWrapper'
 import LayoutWrapper from '@/components/LayoutWrapper'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 
 export const metadata: Metadata = {
   title: 'CPN v2 - Cost Per Nut Calculator',
@@ -32,14 +33,16 @@ export default function RootLayout({
         <link rel="preload" href="/fonts/ESKlarheitGrotesk-Rg.otf" as="font" type="font/otf" crossOrigin="anonymous" />
       </head>
       <body className="bg-cpn-dark text-cpn-white min-h-screen" suppressHydrationWarning>
-        <AppProvider>
-          {/* <ShareProvider> */}
-            <LayoutWrapper>
-              {children}
-            </LayoutWrapper>
-            {/* <ShareModalWrapper /> */}
-          {/* </ShareProvider> */}
-        </AppProvider>
+        <ErrorBoundary>
+          <AppProvider>
+            {/* <ShareProvider> */}
+              <LayoutWrapper>
+                {children}
+              </LayoutWrapper>
+              {/* <ShareModalWrapper /> */}
+            {/* </ShareProvider> */}
+          </AppProvider>
+        </ErrorBoundary>
 
         {/* Rewardful Affiliate Tracking */}
         {rewardfulApiKey && (
