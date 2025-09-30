@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import Sidebar from '@/components/navigation/Sidebar';
 import MobileNav from '@/components/navigation/MobileNav';
+import { ErrorLoggerButton } from '@/components/debug/ErrorViewer';
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -15,6 +16,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
     return (
       <main className="min-h-screen">
         {children}
+        <ErrorLoggerButton />
       </main>
     );
   }
@@ -27,6 +29,7 @@ export default function LayoutWrapper({ children }: { children: React.ReactNode 
         {children}
       </main>
       <MobileNav />
+      <ErrorLoggerButton />
     </div>
   );
 }

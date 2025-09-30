@@ -1,7 +1,9 @@
 'use client'
 
-import { createContext, useContext, useState, ReactNode } from 'react'
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react'
 import { AuthProvider } from './auth/AuthProvider'
+import { errorLogger } from './utils/errorLogger'
+import './utils/testErrorLogger' // Initialize test functions
 
 // Re-export Supabase hooks with expected names
 export { useSupabaseGirls as useGirls } from './hooks/useSupabaseGirls'
@@ -21,6 +23,19 @@ const AppContext = createContext<AppContextType | undefined>(undefined)
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark')
+
+  // Initialize error logger
+  useEffect(() => {
+    // Error logger initializes automatically, this just ensures it's loaded
+    errorLogger.logError({
+      type: 'info',
+      category: 'System',
+      message: 'Error logging system initialized',
+      severity: 'low',
+      emoji: '🚀',
+      explanation: 'Comprehensive error logging is now active and monitoring the application.'
+    })
+  }, [])
 
   return (
     <AppContext.Provider value={{ theme, setTheme }}>
