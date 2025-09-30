@@ -52,7 +52,7 @@ export function useSupabaseGirls() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const supabase = createSupabaseBrowser()
 
   // Convert database girl to app girl format
@@ -131,6 +131,10 @@ export function useSupabaseGirls() {
 
   // Fetch girls from database
   const fetchGirls = async () => {
+    if (authLoading) {
+      return // Don't fetch while auth is loading
+    }
+
     if (!user) {
       setGirls([])
       setGirlsWithMetrics([])
@@ -260,30 +264,33 @@ export function useSupabaseGirls() {
 
   // Subscribe to real-time updates
   useEffect(() => {
-    if (!user) return
+    if (authLoading) return // Wait for auth to complete
 
     fetchGirls()
 
-    const channel = supabase
-      .channel('girls_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'girls',
-          filter: `user_id=eq.${user.id}`,
-        },
-        () => {
-          fetchGirls() // Refresh on any change
-        }
-      )
-      .subscribe()
+    // Only set up real-time subscription if user is authenticated
+    if (user) {
+      const channel = supabase
+        .channel('girls_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'girls',
+            filter: `user_id=eq.${user.id}`,
+          },
+          () => {
+            fetchGirls() // Refresh on any change
+          }
+        )
+        .subscribe()
 
-    return () => {
-      supabase.removeChannel(channel)
+      return () => {
+        supabase.removeChannel(channel)
+      }
     }
-  }, [user])
+  }, [user, authLoading])
 
   return {
     girls,

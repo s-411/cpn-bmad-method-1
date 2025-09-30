@@ -1,11 +1,20 @@
 import { createBrowserClient } from '@supabase/ssr'
 import type { Database } from '../types/database/database'
 
+// Singleton instance
+let supabaseBrowserInstance: ReturnType<typeof createBrowserClient<Database>> | null = null
+
 export function createSupabaseBrowser() {
+  // Return existing instance if available
+  if (supabaseBrowserInstance) {
+    return supabaseBrowserInstance
+  }
+
   // Project reference for cookie filtering
   const PROJECT_REF = 'elaecgbjbxwcgguhtomz'
 
-  return createBrowserClient<Database>(
+  // Create new instance
+  supabaseBrowserInstance = createBrowserClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -57,4 +66,6 @@ export function createSupabaseBrowser() {
       }
     }
   )
+
+  return supabaseBrowserInstance
 }

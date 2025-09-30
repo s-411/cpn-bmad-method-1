@@ -39,7 +39,7 @@ export function useSupabaseDataEntries() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const supabase = createSupabaseBrowser()
 
   // Convert database entry to app entry format
@@ -65,6 +65,10 @@ export function useSupabaseDataEntries() {
 
   // Fetch data entries from database
   const fetchDataEntries = async () => {
+    if (authLoading) {
+      return // Don't fetch while auth is loading
+    }
+
     if (!user) {
       setDataEntries([])
       setLoading(false)
@@ -187,30 +191,33 @@ export function useSupabaseDataEntries() {
 
   // Subscribe to real-time updates
   useEffect(() => {
-    if (!user) return
+    if (authLoading) return // Wait for auth to complete
 
     fetchDataEntries()
 
-    const channel = supabase
-      .channel('data_entries_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'data_entries',
-          filter: `user_id=eq.${user.id}`,
-        },
-        () => {
-          fetchDataEntries() // Refresh on any change
-        }
-      )
-      .subscribe()
+    // Only set up real-time subscription if user is authenticated
+    if (user) {
+      const channel = supabase
+        .channel('data_entries_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'data_entries',
+            filter: `user_id=eq.${user.id}`,
+          },
+          () => {
+            fetchDataEntries() // Refresh on any change
+          }
+        )
+        .subscribe()
 
-    return () => {
-      supabase.removeChannel(channel)
+      return () => {
+        supabase.removeChannel(channel)
+      }
     }
-  }, [user])
+  }, [user, authLoading])
 
   return {
     dataEntries,
