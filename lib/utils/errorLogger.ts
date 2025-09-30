@@ -19,9 +19,27 @@ class ErrorLoggerService {
   private logs: ErrorLog[] = []
   private listeners: ((logs: ErrorLog[]) => void)[] = []
   private maxLogs = 1000
+  private recentMessages = new Set<string>()
+  private lastLogTime = 0
+  private logRateLimit = 100 // minimum ms between logs
+  private originalConsole: {
+    log: typeof console.log
+    warn: typeof console.warn
+    error: typeof console.error
+    group: typeof console.group
+    groupEnd: typeof console.groupEnd
+  } | undefined
 
   constructor() {
     if (typeof window !== 'undefined') {
+      // Store original console methods before we intercept them
+      this.originalConsole = {
+        log: console.log.bind(console),
+        warn: console.warn.bind(console),
+        error: console.error.bind(console),
+        group: console.group.bind(console),
+        groupEnd: console.groupEnd.bind(console)
+      }
       this.initializeErrorCapture()
     }
   }
@@ -245,12 +263,32 @@ class ErrorLoggerService {
   }
 
   public logError(error: Partial<ErrorLog>) {
+    const now = Date.now()
+    const message = error.message || 'Unknown error'
+
+    // Rate limiting: prevent rapid successive logs
+    if (now - this.lastLogTime < this.logRateLimit) {
+      return
+    }
+
+    // Deduplication: prevent logging the same message repeatedly
+    const messageKey = `${error.category}-${message}`
+    if (this.recentMessages.has(messageKey)) {
+      return
+    }
+
+    // Add to recent messages and clean up old ones after 5 seconds
+    this.recentMessages.add(messageKey)
+    setTimeout(() => this.recentMessages.delete(messageKey), 5000)
+
+    this.lastLogTime = now
+
     const log: ErrorLog = {
       id: Math.random().toString(36).substr(2, 9),
       timestamp: new Date(),
       type: error.type || 'error',
       category: error.category || 'General',
-      message: error.message || 'Unknown error',
+      message,
       details: error.details,
       stack: error.stack,
       url: window.location.href,
@@ -275,18 +313,21 @@ class ErrorLoggerService {
   }
 
   private logToConsoleEnhanced(log: ErrorLog) {
+    // Use original console methods to prevent infinite loop
+    if (!this.originalConsole) return
+
     const style = this.getConsoleStyle(log.severity)
-    console.group(`%c${log.emoji} ${log.category} - ${log.severity.toUpperCase()}`, style)
-    console.log(`%c📝 Message: ${log.message}`, 'color: #333; font-weight: bold;')
-    console.log(`%c💡 Explanation: ${log.explanation}`, 'color: #666; font-style: italic;')
-    console.log(`%c🕐 Time: ${log.timestamp.toLocaleTimeString()}`, 'color: #999;')
+    this.originalConsole.group(`%c${log.emoji} ${log.category} - ${log.severity.toUpperCase()}`, style)
+    this.originalConsole.log(`%c📝 Message: ${log.message}`, 'color: #333; font-weight: bold;')
+    this.originalConsole.log(`%c💡 Explanation: ${log.explanation}`, 'color: #666; font-style: italic;')
+    this.originalConsole.log(`%c🕐 Time: ${log.timestamp.toLocaleTimeString()}`, 'color: #999;')
     if (log.details) {
-      console.log('%c📊 Details:', 'color: #666;', log.details)
+      this.originalConsole.log('%c📊 Details:', 'color: #666;', log.details)
     }
     if (log.stack) {
-      console.log('%c📚 Stack:', 'color: #999; font-family: monospace;', log.stack)
+      this.originalConsole.log('%c📚 Stack:', 'color: #999; font-family: monospace;', log.stack)
     }
-    console.groupEnd()
+    this.originalConsole.groupEnd()
   }
 
   private getConsoleStyle(severity: string): string {
