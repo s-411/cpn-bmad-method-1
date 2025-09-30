@@ -2,11 +2,19 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  })
+  // Skip middleware for static files and API routes
+  if (request.nextUrl.pathname.startsWith('/_next/') ||
+      request.nextUrl.pathname.startsWith('/api/') ||
+      request.nextUrl.pathname.includes('.')) {
+    return NextResponse.next()
+  }
+
+  try {
+    let response = NextResponse.next({
+      request: {
+        headers: request.headers,
+      },
+    })
 
   // Project reference for cookie filtering
   const PROJECT_REF = 'elaecgbjbxwcgguhtomz'
@@ -71,7 +79,11 @@ export async function middleware(request: NextRequest) {
 
   const {
     data: { user },
+    error
   } = await supabase.auth.getUser()
+
+  // Log auth state for debugging (remove in production)
+  console.log(`[MIDDLEWARE] ${request.nextUrl.pathname} - User: ${user?.email || 'None'}, Error:`, error)
 
   // Public routes that don't require authentication
   const publicRoutes = ['/auth/login', '/auth/signup', '/onboarding']
@@ -96,7 +108,12 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return response
+    return response
+  } catch (error) {
+    console.error('[MIDDLEWARE] Error:', error)
+    // If middleware fails, redirect to login for safety
+    return NextResponse.redirect(new URL('/auth/login', request.url))
+  }
 }
 
 export const config = {
