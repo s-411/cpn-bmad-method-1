@@ -86,12 +86,12 @@ export default function Sidebar() {
           })}
         </nav>
 
-        <div className="mt-auto pt-6 border-t border-cpn-gray/20">
+        <div className="mt-auto pt-6 border-t border-cpn-gray/20" suppressHydrationWarning={true}>
           {user && (
-            <div className="mb-4">
+            <div className="mb-4" suppressHydrationWarning={true}>
               <div className="text-xs text-cpn-gray mb-3">
                 <p>Logged in as:</p>
-                <p className="mt-1 text-cpn-white truncate">{user.email}</p>
+                <p className="mt-1 text-cpn-white truncate" suppressHydrationWarning={true}>{user.email}</p>
               </div>
               <button
                 onClick={() => signOut()}
