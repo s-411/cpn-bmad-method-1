@@ -25,36 +25,8 @@ import {
 import { useGirls, useDataEntries } from '@/lib/context';
 import { leaderboardGroupsStorage, leaderboardMembersStorage } from '@/lib/leaderboards';
 import { LeaderboardGroup } from '@/lib/types';
+import { useSupabaseSettings } from '@/lib/hooks/useSupabaseSettings';
 import Link from 'next/link';
-
-interface UserProfile {
-  displayName: string;
-  avatarUrl?: string;
-  accountCreated: Date;
-  lastLogin: Date;
-}
-
-interface DateTimeSettings {
-  dateFormat: string;
-  timeFormat: '12h' | '24h';
-  weekStart: 'sunday' | 'monday';
-}
-
-interface NotificationSettings {
-  leaderboardUpdates: boolean;
-  achievementAlerts: boolean;
-  weeklyReports: boolean;
-  monthlyReports: boolean;
-  dataReminders: boolean;
-}
-
-interface PrivacySettings {
-  leaderboardVisible: boolean;
-  shareStats: boolean;
-  shareAchievements: boolean;
-  profileDiscoverable: boolean;
-  anonymousMode: boolean;
-}
 
 const defaultAvatars = [
   '👤', '🧑‍💼', '👨‍💻', '👩‍💻', '🧑‍🎨', '👨‍🎨', '👩‍🎨', '🧑‍🔬',
@@ -77,76 +49,33 @@ export default function SettingsPage() {
   const { girls, girlsWithMetrics } = useGirls();
   const { dataEntries } = useDataEntries();
   const [isClient, setIsClient] = useState(false);
-  
-  // Profile state
-  const [profile, setProfile] = useState<UserProfile>({
-    displayName: 'CPN User',
-    avatarUrl: '👤',
-    accountCreated: new Date('2024-01-01'),
-    lastLogin: new Date()
-  });
+
+  // Use Supabase settings hook
+  const {
+    profileSettings,
+    dateTimeSettings,
+    notificationSettings,
+    privacySettings,
+    loading: settingsLoading,
+    error: settingsError,
+    updateProfileSettings,
+    updateDateTimeSettings: updateDateTimeSettingsSupabase,
+    updateNotificationSettings: updateNotificationSettingsSupabase,
+    updatePrivacySettings: updatePrivacySettingsSupabase
+  } = useSupabaseSettings();
+
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [tempDisplayName, setTempDisplayName] = useState('');
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
-
-  // DateTime settings state
-  const [dateTimeSettings, setDateTimeSettings] = useState<DateTimeSettings>({
-    dateFormat: 'MM/DD/YYYY',
-    timeFormat: '12h',
-    weekStart: 'monday'
-  });
-
-  // Notification settings state
-  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
-    leaderboardUpdates: true,
-    achievementAlerts: true,
-    weeklyReports: false,
-    monthlyReports: true,
-    dataReminders: true
-  });
-
-  // Privacy settings state
-  const [privacySettings, setPrivacySettings] = useState<PrivacySettings>({
-    leaderboardVisible: true,
-    shareStats: false,
-    shareAchievements: true,
-    profileDiscoverable: true,
-    anonymousMode: false
-  });
 
   // Leaderboards state
   const [userGroups, setUserGroups] = useState<LeaderboardGroup[]>([]);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [groupToLeave, setGroupToLeave] = useState<LeaderboardGroup | null>(null);
 
-  // Load settings from localStorage
+  // Load settings and user groups
   useEffect(() => {
     setIsClient(true);
-    
-    const savedProfile = localStorage.getItem('cpn_user_profile');
-    if (savedProfile) {
-      const parsed = JSON.parse(savedProfile);
-      setProfile({
-        ...parsed,
-        accountCreated: new Date(parsed.accountCreated),
-        lastLogin: new Date(parsed.lastLogin)
-      });
-    }
-
-    const savedDateTime = localStorage.getItem('cpn_datetime_settings');
-    if (savedDateTime) {
-      setDateTimeSettings(JSON.parse(savedDateTime));
-    }
-
-    const savedNotifications = localStorage.getItem('cpn_notification_settings');
-    if (savedNotifications) {
-      setNotificationSettings(JSON.parse(savedNotifications));
-    }
-
-    const savedPrivacy = localStorage.getItem('cpn_privacy_settings');
-    if (savedPrivacy) {
-      setPrivacySettings(JSON.parse(savedPrivacy));
-    }
 
     // Load user groups
     loadUserGroups();
@@ -159,38 +88,27 @@ export default function SettingsPage() {
     setUserGroups(allGroups);
   };
 
-  // Save functions
-  const saveProfile = (newProfile: UserProfile) => {
-    setProfile(newProfile);
-    localStorage.setItem('cpn_user_profile', JSON.stringify(newProfile));
+  // Settings update functions (using Supabase)
+  const updateDateTimeSettings = (updates: any) => {
+    updateDateTimeSettingsSupabase(updates);
   };
 
-  const updateDateTimeSettings = (updates: Partial<DateTimeSettings>) => {
-    const newSettings = { ...dateTimeSettings, ...updates };
-    setDateTimeSettings(newSettings);
-    localStorage.setItem('cpn_datetime_settings', JSON.stringify(newSettings));
+  const updateNotificationSettings = (updates: any) => {
+    updateNotificationSettingsSupabase(updates);
   };
 
-  const updateNotificationSettings = (updates: Partial<NotificationSettings>) => {
-    const newSettings = { ...notificationSettings, ...updates };
-    setNotificationSettings(newSettings);
-    localStorage.setItem('cpn_notification_settings', JSON.stringify(newSettings));
-  };
-
-  const updatePrivacySettings = (updates: Partial<PrivacySettings>) => {
-    const newSettings = { ...privacySettings, ...updates };
-    setPrivacySettings(newSettings);
-    localStorage.setItem('cpn_privacy_settings', JSON.stringify(newSettings));
+  const updatePrivacySettings = (updates: any) => {
+    updatePrivacySettingsSupabase(updates);
   };
 
   // Profile edit handlers
   const handleEditDisplayName = () => {
-    setTempDisplayName(profile.displayName);
+    setTempDisplayName(profileSettings?.displayName || 'CPN User');
     setIsEditingProfile(true);
   };
 
   const handleSaveDisplayName = () => {
-    saveProfile({ ...profile, displayName: tempDisplayName || 'CPN User' });
+    updateProfileSettings({ displayName: tempDisplayName || 'CPN User' });
     setIsEditingProfile(false);
   };
 
@@ -200,7 +118,7 @@ export default function SettingsPage() {
   };
 
   const handleAvatarChange = (avatar: string) => {
-    saveProfile({ ...profile, avatarUrl: avatar });
+    updateProfileSettings({ avatarUrl: avatar });
     setShowAvatarSelector(false);
   };
 
@@ -253,7 +171,17 @@ export default function SettingsPage() {
   // Calculate stats (only on client to avoid hydration mismatch)
   const totalGirls = girls.length;
   const totalEntries = dataEntries.length;
-  const accountAge = isClient ? Math.floor((new Date().getTime() - profile.accountCreated.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+  const accountCreatedDate = profileSettings?.accountCreated ? new Date(profileSettings.accountCreated) : new Date('2024-01-01');
+  const accountAge = isClient ? Math.floor((new Date().getTime() - accountCreatedDate.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+
+  // Show loading state while settings are loading
+  if (settingsLoading) {
+    return (
+      <div className="min-h-screen bg-cpn-dark flex items-center justify-center">
+        <div className="text-cpn-gray">Loading settings...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-cpn-dark">
@@ -340,7 +268,7 @@ export default function SettingsPage() {
                   </div>
                 ) : (
                   <div className="flex items-center justify-between flex-1">
-                    <span className="text-cpn-white text-lg">{profile.displayName}</span>
+                    <span className="text-cpn-white text-lg">{profileSettings?.displayName || 'CPN User'}</span>
                     <button
                       onClick={handleEditDisplayName}
                       className="p-2 text-cpn-gray hover:text-cpn-white transition-colors cursor-pointer"
@@ -356,7 +284,7 @@ export default function SettingsPage() {
             <div>
               <h3 className="text-lg font-medium text-cpn-white mb-4">Avatar</h3>
               <div className="flex items-center gap-4">
-                <div className="text-4xl">{profile.avatarUrl}</div>
+                <div className="text-4xl">{profileSettings?.avatarUrl || '👤'}</div>
                 <button
                   onClick={() => setShowAvatarSelector(!showAvatarSelector)}
                   className="px-4 py-2 bg-cpn-dark2 border border-cpn-gray/30 rounded-lg text-cpn-white hover:border-cpn-yellow transition-colors cursor-pointer"
@@ -373,7 +301,7 @@ export default function SettingsPage() {
                         key={avatar}
                         onClick={() => handleAvatarChange(avatar)}
                         className={`text-2xl p-2 rounded hover:bg-cpn-yellow/20 transition-colors cursor-pointer ${
-                          profile.avatarUrl === avatar ? 'bg-cpn-yellow/30' : ''
+                          profileSettings?.avatarUrl === avatar ? 'bg-cpn-yellow/30' : ''
                         }`}
                       >
                         {avatar}
@@ -474,14 +402,14 @@ export default function SettingsPage() {
                   <p className="text-sm text-cpn-gray">Get notified when you unlock new achievements</p>
                 </div>
                 <button
-                  onClick={() => updateNotificationSettings({ achievementAlerts: !notificationSettings.achievementAlerts })}
+                  onClick={() => updateNotificationSettings({ achievementAlerts: !notificationSettings?.achievementAlerts })}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                    notificationSettings.achievementAlerts ? 'bg-green-500' : 'bg-cpn-gray'
+                    notificationSettings?.achievementAlerts ? 'bg-green-500' : 'bg-cpn-gray'
                   }`}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      notificationSettings.achievementAlerts ? 'translate-x-6' : 'translate-x-1'
+                      notificationSettings?.achievementAlerts ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
                 </button>
@@ -493,14 +421,14 @@ export default function SettingsPage() {
                   <p className="text-sm text-cpn-gray">Receive weekly summaries of your activity</p>
                 </div>
                 <button
-                  onClick={() => updateNotificationSettings({ weeklyReports: !notificationSettings.weeklyReports })}
+                  onClick={() => updateNotificationSettings({ weeklyReports: !notificationSettings?.weeklyReports })}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                    notificationSettings.weeklyReports ? 'bg-green-500' : 'bg-cpn-gray'
+                    notificationSettings?.weeklyReports ? 'bg-green-500' : 'bg-cpn-gray'
                   }`}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      notificationSettings.weeklyReports ? 'translate-x-6' : 'translate-x-1'
+                      notificationSettings?.weeklyReports ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
                 </button>
@@ -512,14 +440,14 @@ export default function SettingsPage() {
                   <p className="text-sm text-cpn-gray">Get detailed monthly analytics and insights</p>
                 </div>
                 <button
-                  onClick={() => updateNotificationSettings({ monthlyReports: !notificationSettings.monthlyReports })}
+                  onClick={() => updateNotificationSettings({ monthlyReports: !notificationSettings?.monthlyReports })}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                    notificationSettings.monthlyReports ? 'bg-green-500' : 'bg-cpn-gray'
+                    notificationSettings?.monthlyReports ? 'bg-green-500' : 'bg-cpn-gray'
                   }`}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      notificationSettings.monthlyReports ? 'translate-x-6' : 'translate-x-1'
+                      notificationSettings?.monthlyReports ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
                 </button>
@@ -531,14 +459,14 @@ export default function SettingsPage() {
                   <p className="text-sm text-cpn-gray">Gentle reminders to log your activities</p>
                 </div>
                 <button
-                  onClick={() => updateNotificationSettings({ dataReminders: !notificationSettings.dataReminders })}
+                  onClick={() => updateNotificationSettings({ dataReminders: !notificationSettings?.dataReminders })}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                    notificationSettings.dataReminders ? 'bg-green-500' : 'bg-cpn-gray'
+                    notificationSettings?.dataReminders ? 'bg-green-500' : 'bg-cpn-gray'
                   }`}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      notificationSettings.dataReminders ? 'translate-x-6' : 'translate-x-1'
+                      notificationSettings?.dataReminders ? 'translate-x-6' : 'translate-x-1'
                     }`}
                   />
                 </button>

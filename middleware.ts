@@ -8,15 +8,26 @@ export async function middleware(request: NextRequest) {
     },
   })
 
+  // Project reference for cookie filtering
+  const PROJECT_REF = 'elaecgbjbxwcgguhtomz'
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         get(name: string) {
+          // ONLY return cookies for target project
+          if (!name.includes(PROJECT_REF)) {
+            return undefined
+          }
           return request.cookies.get(name)?.value
         },
         set(name: string, value: string, options: CookieOptions) {
+          // Only set cookies for target project
+          if (!name.includes(PROJECT_REF)) {
+            return
+          }
           request.cookies.set({
             name,
             value,
@@ -34,6 +45,10 @@ export async function middleware(request: NextRequest) {
           })
         },
         remove(name: string, options: CookieOptions) {
+          // Only remove cookies for target project
+          if (!name.includes(PROJECT_REF)) {
+            return
+          }
           request.cookies.set({
             name,
             value: '',
@@ -92,7 +107,8 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder
+     * - clear-auth.html (nuclear cleanup tool)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.png$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|clear-auth\\.html|.*\\.png$).*)',
   ],
 }

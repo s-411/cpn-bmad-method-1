@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuclear Auth Cleanup Tool</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #e1e1e1;
+            padding-bottom: 10px;
+        }
+        button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #c82333;
+        }
+        .safe-button {
+            background: #28a745;
+        }
+        .safe-button:hover {
+            background: #218838;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ffeeba;
+            margin-bottom: 20px;
+        }
+        code {
+            background: #f1f1f1;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Nuclear Auth Cleanup Tool</h1>
+
+        <div class="warning">
+            <strong>⚠️ Warning:</strong> This tool will clear authentication data. Use only when experiencing auth conflicts.
+            <br><br>
+            <strong>Project:</strong> <code>elaecgbjbxwcgguhtomz</code>
+        </div>
+
+        <p>This tool helps resolve authentication conflicts by:</p>
+        <ul>
+            <li>Clearing all cookies except for the target Supabase project</li>
+            <li>Removing all localStorage items except project-specific ones</li>
+            <li>Clearing sessionStorage</li>
+        </ul>
+
+        <div style="margin-top: 30px;">
+            <button onclick="clearAllAuth()">🧹 Clear Everything (Nuclear Option)</button>
+            <button onclick="clearNonProjectAuth()" class="safe-button">✅ Clear Non-Project Auth Only</button>
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e1e1e1;">
+            <h3>Current Storage Status:</h3>
+            <button onclick="showStorageStatus()" style="background: #6c757d;">📊 Show Current Status</button>
+            <div id="storageStatus" style="margin-top: 15px;"></div>
+        </div>
+    </div>
+
+    <script>
+        const PROJECT_REF = 'elaecgbjbxwcgguhtomz';
+
+        function clearAllAuth() {
+            if (!confirm('This will clear ALL authentication data including the current project. Are you sure?')) {
+                return;
+            }
+
+            try {
+                // Clear ALL cookies
+                document.cookie.split(";").forEach(function(c) {
+                    const eqPos = c.indexOf("=");
+                    const name = eqPos > -1 ? c.substring(0, eqPos).trim() : c.trim();
+                    if (name) {
+                        // Clear for all possible domains and paths
+                        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/";
+                        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;domain=localhost";
+                        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;domain=.localhost";
+                        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;domain=" + window.location.hostname;
+                        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;domain=." + window.location.hostname;
+                    }
+                });
+
+                // Clear all localStorage
+                localStorage.clear();
+
+                // Clear all sessionStorage
+                sessionStorage.clear();
+
+                showStatus('success', '✅ All authentication data cleared successfully! Please refresh the page.');
+            } catch (error) {
+                showStatus('error', '❌ Error clearing auth data: ' + error.message);
+            }
+        }
+
+        function clearNonProjectAuth() {
+            try {
+                let clearedCookies = 0;
+                let clearedLocalStorage = 0;
+
+                // Clear cookies NOT related to our project
+                document.cookie.split(";").forEach(function(c) {
+                    const eqPos = c.indexOf("=");
+                    const name = eqPos > -1 ? c.substring(0, eqPos).trim() : c.trim();
+
+                    if (name && !name.includes(PROJECT_REF) && !name.includes('__cf_bm')) {
+                        // Clear for all possible domains and paths
+                        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/";
+                        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;domain=localhost";
+                        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;domain=.localhost";
+                        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;domain=" + window.location.hostname;
+                        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;domain=." + window.location.hostname;
+                        clearedCookies++;
+                    }
+                });
+
+                // Clear localStorage items NOT related to our project
+                const keysToRemove = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && !key.includes(PROJECT_REF) && !key.startsWith('cpn_')) {
+                        keysToRemove.push(key);
+                    }
+                }
+                keysToRemove.forEach(key => {
+                    localStorage.removeItem(key);
+                    clearedLocalStorage++;
+                });
+
+                // Clear all sessionStorage (it's temporary anyway)
+                sessionStorage.clear();
+
+                showStatus('success',
+                    `✅ Cleared non-project auth data:\n` +
+                    `- ${clearedCookies} cookies removed\n` +
+                    `- ${clearedLocalStorage} localStorage items removed\n` +
+                    `- sessionStorage cleared\n` +
+                    `Project ${PROJECT_REF} data preserved.`
+                );
+            } catch (error) {
+                showStatus('error', '❌ Error clearing auth data: ' + error.message);
+            }
+        }
+
+        function showStorageStatus() {
+            let status = '<h4>Current Storage:</h4>';
+
+            // Count cookies
+            const cookies = document.cookie.split(';');
+            let projectCookies = 0;
+            let otherCookies = 0;
+
+            cookies.forEach(c => {
+                const name = c.split('=')[0].trim();
+                if (name) {
+                    if (name.includes(PROJECT_REF)) {
+                        projectCookies++;
+                    } else {
+                        otherCookies++;
+                    }
+                }
+            });
+
+            status += `<p><strong>Cookies:</strong><br>`;
+            status += `- Project cookies (${PROJECT_REF}): ${projectCookies}<br>`;
+            status += `- Other cookies: ${otherCookies}</p>`;
+
+            // Count localStorage
+            let projectLocalStorage = 0;
+            let cpnLocalStorage = 0;
+            let otherLocalStorage = 0;
+
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.includes(PROJECT_REF)) {
+                    projectLocalStorage++;
+                } else if (key.startsWith('cpn_')) {
+                    cpnLocalStorage++;
+                } else {
+                    otherLocalStorage++;
+                }
+            }
+
+            status += `<p><strong>LocalStorage:</strong><br>`;
+            status += `- Project items: ${projectLocalStorage}<br>`;
+            status += `- CPN items: ${cpnLocalStorage}<br>`;
+            status += `- Other items: ${otherLocalStorage}</p>`;
+
+            status += `<p><strong>SessionStorage:</strong> ${sessionStorage.length} items</p>`;
+
+            document.getElementById('storageStatus').innerHTML = status;
+        }
+
+        function showStatus(type, message) {
+            const statusEl = document.getElementById('status');
+            statusEl.className = 'status ' + type;
+            statusEl.textContent = message;
+            statusEl.style.whiteSpace = 'pre-line';
+        }
+
+        // Show initial status on load
+        window.onload = function() {
+            showStorageStatus();
+        };
+    </script>
+</body>
+</html>

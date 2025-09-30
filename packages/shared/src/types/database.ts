@@ -7,8 +7,41 @@ export interface User {
   subscription_tier: 'boyfriend' | 'player' | 'lifetime';
   subscription_status: 'active' | 'cancelled' | 'expired';
   stripe_customer_id?: string;
+  profile_settings?: UserProfileSettings;
+  datetime_settings?: DateTimeSettings;
+  notification_settings?: NotificationSettings;
+  privacy_settings?: PrivacySettings;
   created_at: string;
   updated_at: string;
+}
+
+export interface UserProfileSettings {
+  displayName: string;
+  avatarUrl?: string;
+  accountCreated?: string;
+  lastLogin?: string;
+}
+
+export interface DateTimeSettings {
+  dateFormat: string;
+  timeFormat: '12h' | '24h';
+  weekStart: 'sunday' | 'monday';
+}
+
+export interface NotificationSettings {
+  leaderboardUpdates: boolean;
+  achievementAlerts: boolean;
+  weeklyReports: boolean;
+  monthlyReports: boolean;
+  dataReminders: boolean;
+}
+
+export interface PrivacySettings {
+  leaderboardVisible: boolean;
+  shareStats: boolean;
+  shareAchievements: boolean;
+  profileDiscoverable: boolean;
+  anonymousMode: boolean;
 }
 
 export interface Girl {
